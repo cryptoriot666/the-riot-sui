@@ -1,29 +1,183 @@
-# The Riot: Agentic Punk NFTs on Sui
+🔴 $RIOT — Persistent Punk Agents
+Agentic NFTs with Verifiable Long-Term Memory on Sui
+   
+🌐 Website • 📊 DeepSurge • 💬 Telegram • 🐦 X
 
-Hand-drawn punk characters. Each one is an AI agent with its own personality.
+🧠 The Problem
+AI agents today are powerful, but still fundamentally stateless and fragmented:
+•❌ They complete tasks in isolation and lose context across sessions
 
-## The Problem
-NFT collections are static JPEGs. Holders buy, flip, forget.
+•❌ Memory is locked to a single app, model, or device
 
-## The Solution
-Agentic NFTs — characters that live, speak, and interact.
+•❌ Agents can’t share knowledge across tools, teams, or workflows
 
-- Hand-drawn generative art
-- AI personality layer (OpenAI/Claude)
-- Telegram/Discord bot integration
-- Sui Move smart contract
-- Walrus decentralized storage
+•❌ NFTs are static JPEGs with no ongoing utility or engagement
+As agents evolve from simple assistants to autonomous, long-running systems, they need a durable foundation — memory that is portable, persistent, and not locked into a single platform.
 
-## Track
-The Agentic Web — Sui Overflow 2026
+🔥 The Solution
+$RIOT is a multi-agent punk collective where each character is a long-running autonomous agent with:
+•✅ Persistent memory via MemWal (Walrus Memory) — cross-session, verifiable, on-chain
 
-## Team
-- @suicryptoriot (Artist, Backend, Founder)
-- Looking for: Move Developer
+•✅ Multi-agent coordination — agents delegate tasks and share context via Sui Stack Messaging
 
-## Links
-- Twitter: https://x.com/suicryptoriot
-<img width="600" height="800" alt="J18" src="https://github.com/user-attachments/assets/6353fe7f-6318-473b-a362-5bf7b88b4cb5" />
-<img width="600" height="800" alt="J17" src="https://github.com/user-attachments/assets/3746bbcd-03f9-48e8-a405-b2c38779ce08" />
-<img width="600" height="800" alt="J16" src="https://github.com/user-attachments/assets/41b42fd3-2147-4b6a-960b-fd935c2e504e" />
-<img width="600" height="800" alt="J15" src="https://github.com/user-attachments/assets/23aa5042-3b38-4f48-8e92-56735109e108" />
+•✅ Artifact-driven workflows — generated art, lore, and logs stored as Walrus blobs with on-chain provenance
+
+•✅ Portable ownership — sell the NFT, transfer the agent’s memory history
+“Most NFTs are dead JPEGs. What if your NFT actually remembered you?”
+
+🏗️ System Architecture
+┌─────────────────────────────────────────────────────────────────┐
+│                         USER LAYER                              │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
+│  │   Telegram   │  │   Discord    │  │  Web dApp    │          │
+│  │     Bot      │  │     Bot      │  │  (Walrus Site)│         │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘          │
+└─────────┼──────────────────┼──────────────────┼──────────────────┘
+          │                  │                  │
+          └──────────────────┴──────────────────┘
+                             │
+                    ┌────────▼────────┐
+                    │   OpenClaw      │
+                    │  Agent Engine   │
+                    │  + DeepSeek LLM │
+                    └────────┬────────┘
+                             │
+          ┌──────────────────┼──────────────────┐
+          │                  │                  │
+   ┌──────▼──────┐  ┌───────▼───────┐  ┌──────▼──────┐
+   │    J4       │  │     J1        │  │    J10      │
+   │  Frontman   │  │  Strategist   │  │   Artist    │
+   │  (UI/UX)    │  │  (Analytics)  │  │ (Generator) │
+   └──────┬──────┘  └───────┬───────┘  └──────┬──────┘
+          │                  │                  │
+          └──────────────────┼──────────────────┘
+                             │
+              ┌──────────────▼──────────────┐
+              │      MEMWAL (WALRUS MEMORY) │
+              │  ┌─────────────────────────┐  │
+              │  │  Shared Context Layer   │  │
+              │  │  • User preferences     │  │
+              │  │  • Conversation logs    │  │
+              │  │  • Agent state          │  │
+              │  │  • Artifact references  │  │
+              │  └─────────────────────────┘  │
+              └──────────────┬────────────────┘
+                             │
+          ┌──────────────────┼──────────────────┐
+          │                  │                  │
+   ┌──────▼──────┐  ┌───────▼───────┐  ┌──────▼──────┐
+   │   Walrus    │  │     Seal      │  │    Sui      │
+   │   Storage   │  │   (Privacy)   │  │  Blockchain │
+   │             │  │               │  │             │
+   │ • Artifacts │  │ • Encrypted   │  │ • NFT       │
+   │ • Metadata  │  │   memory      │  │   ownership │
+   │ • Logs      │  │ • Access      │  │ • Blob IDs  │
+   │             │  │   control     │  │ • Agent IDs │
+   └─────────────┘  └───────────────┘  └─────────────┘
+Data Flow: From Chat to Chain
+1.User sends message via Telegram Bot
+2.J4 (Frontman) retrieves user history from MemWal
+3.J4 delegates to specialist agent (e.g., J10-Artist) via Sui Stack Messaging
+4.Specialist agent reads shared context, generates artifact
+5.Artifact uploaded to Walrus → returns Blob ID
+6.Move smart contract updates NFT metadata with blob_ref
+7.J4 responds to user with result + roast
+
+🛠️ Tech Stack
+Layer	Technology	Purpose
+Blockchain	Sui (Move)	NFT ownership, Agent ID registry, Blob reference
+Memory	MemWal	Persistent, cross-session agent memory on Walrus
+Storage	Walrus	Artifact persistence (images, logs, metadata)
+Privacy	Seal	Encrypted memory segments & access control
+Messaging	Sui Stack Messaging	Inter-agent communication & recovery
+AI Engine	OpenClaw + DeepSeek	Personality engine, reasoning, generation
+Interface	Telegram Bot	User-facing chat interface
+Gallery	Walrus Sites	Decentralized, dynamic artifact gallery
+
+📁 Project Structure
+the-riot-sui/
+├── contracts/
+│   └── move/                    # Sui Move smart contracts
+│       ├── sources/
+│       │   ├── riot_nft.move    # NFT + Agent ID + Blob registry
+│       │   └── riot_memory.move # On-chain memory reference
+│       └── tests/
+├── agents/
+│   ├── j4/                      # J4 — Frontman Agent
+│   ├── j1/                      # J1 — Strategist Agent
+│   ├── j10/                     # J10 — Artist Agent
+│   └── shared/
+│       ├── memwal_adapter.py    # MemWal read/write wrapper
+│       ├── walrus_client.py     # Walrus blob upload/download
+│       └── stack_messaging.py   # Inter-agent messaging
+├── bot/
+│   └── telegram/
+│       ├── main.py              # Telegram bot entrypoint
+│       └── handlers/
+├── frontend/
+│   ├── index.html               # Landing page (this repo)
+│   └── walrus-site/             # Walrus Sites deployment
+├── assets/
+│   └── characters/              # 18 base hand-drawn artworks
+└── docs/
+    ├── ARCHITECTURE.md
+    └── API.md
+
+🚀 Quickstart
+Prerequisites
+•Sui CLI
+•Walrus CLI
+•Python 3.10+
+•Telegram Bot Token
+1. Clone & Setup
+git clone https://github.com/cryptoriot666/the-riot-sui.git
+cd the-riot-sui
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Setup MemWal delegate key
+python scripts/setup_memwal.py --agent-id J4
+2. Deploy Move Contract (Testnet)
+cd contracts/move
+sui move build
+sui client publish --gas-budget 50000000
+3. Run J4 Agent Locally
+cd agents/j4
+python main.py   --memwal-key $MEMWAL_DELEGATE_KEY   --contract-id $RIOT_CONTRACT_ID   --telegram-token $TG_BOT_TOKEN
+4. Upload Artifact to Walrus
+walrus store assets/characters/J4_cyberpunk_v2.png
+# Returns: Blob ID → update NFT metadata
+
+🎬 Demo
+Coming soon: Full demo video for Sui Overflow 2026 submission.
+Live Preview
+Feature	Status	Link
+Landing Page	✅ Live	theriot.vercel.app
+DeepSurge Project	✅ Live	View Project
+Telegram Bot	🚧 WIP	Join Portal
+Move Contract	🚧 WIP	contracts/move/
+MemWal Integration	🚧 WIP	agents/shared/memwal_adapter.py
+
+🧪 What Makes This Different
+For Users
+•Your agent remembers your jokes, preferences, and history — across sessions, browsers, and devices
+•Agents coordinate — tell J4 something, J10 knows it instantly
+•Your NFT evolves — new artifacts, new lore, new personality over time
+For Developers
+•Open-source template for attaching MemWal to any Sui NFT
+•Reusable adapters for Walrus storage + Move blob registry
+•Multi-agent framework using Sui Stack Messaging for coordination
+
+👥 Team
+Role	Handle	Status
+Founder & Artist	@suicryptoriot	✅ Active
+Move Developer	—	🔍 Open
+AI / Backend Dev	—	🔍 Open
+Want to join? DM on X or join Telegram.
+
+📜 License
+MIT — Open source forever. Fork it, break it, make it yours.
+
+Built for Sui Overflow 2026 — Walrus Track
+🔴 The riot is inevitable. 🔴
