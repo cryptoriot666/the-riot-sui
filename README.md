@@ -220,6 +220,22 @@ walrus store assets/characters/J4_cyberpunk_v2.png
 
 ---
 
+## 🌐 Live Deployment
+
+### Primary Access (Vercel)
+- **URL**: https://theriot.vercel.app
+- **Status**: Always online, fast global CDN
+
+### Decentralized Backup (Walrus Mainnet)
+- **Object ID**: `0xe2e3c83082e6a04746a2e7571a0bc6c72a2c6f6026f083a673832704eb15f7c3`
+- **Base36 URL**: `https://5nkuw13m1y5pem7ytqvraw5wug8xo8ofdhi0mwwlod09ip1m83.wal.app`
+- **Status**: Permanent on-chain storage (30 epochs)
+- **Note**: Walrus public portal may experience temporary downtime due to full node load, but data remains permanently accessible via local portal or Sui client.
+
+### Smart Contract
+- **Package ID**: [isi dari Published.toml]
+- **Network**: Sui Mainnet
+
 ## 👥 Team
 
 | Role | Handle | Status |
