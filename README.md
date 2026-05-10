@@ -233,7 +233,7 @@ walrus store assets/characters/J4_cyberpunk_v2.png
 - **Note**: Walrus public portal may experience temporary downtime due to full node load, but data remains permanently accessible via local portal or Sui client.
 
 ### Smart Contract
-- **Package ID**: [isi dari Published.toml]
+- **Package ID**: [0xdbc1f8751848fb5b0ab043380ea97a84c38c39cc15d37911123a4a0bb4b3778a]
 - **Network**: Sui Mainnet
 
 ## 👥 Team
