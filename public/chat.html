@@ -130,7 +130,7 @@
             color: #000;
         }
 
-        /* Wallet Modal */
+        /* Wallet Modal - Clean & Simple */
         .wallet-modal {
             display: none;
             position: fixed;
@@ -152,7 +152,7 @@
             border-radius: 16px;
             padding: 24px;
             width: 90%;
-            max-width: 420px;
+            max-width: 400px;
             color: #000;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
@@ -161,7 +161,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
         .wallet-box-header h3 {
             font-size: 1.2rem;
@@ -225,13 +225,6 @@
             margin-left: auto;
             font-size: 0.8rem;
             color: #999;
-        }
-        .wallet-item-simple .status.detected {
-            color: #0f0;
-            font-weight: 600;
-        }
-        .wallet-item-simple .status.failed {
-            color: #ff0040;
         }
         
         /* Manual Input Fallback */
@@ -604,7 +597,6 @@
             .wallet-bar { flex-direction: column; align-items: flex-start; }
         }
     </style>
-<base target="_blank">
 </head>
 <body>
     <div class="header">
@@ -636,7 +628,7 @@
                 <button class="wallet-box-close" onclick="closeWalletModal()">&times;</button>
             </div>
             <div class="wallet-list-simple" id="walletList">
-                <!-- Populated by JS -->
+                <!-- Wallets populated by JS -->
             </div>
             
             <!-- Manual Input Fallback -->
@@ -702,130 +694,138 @@
     </div>
 
     <script>
-        // Enhanced wallet detection config
-        const WALLET_CONFIG = [
-            { 
-                id: 'suiet', 
-                name: 'Suiet', 
-                icon: '💧', 
-                check: () => window.suiet || window.suietWallet,
-                getAddress: async () => {
-                    const w = window.suiet || window.suietWallet;
-                    if (!w) return null;
-                    if (w.getAccounts) {
-                        const acc = await w.getAccounts();
-                        return acc?.[0]?.address || acc?.[0];
+        // ===== WALLET STANDARD DETECTION =====
+        // This uses the Sui Wallet Standard - works with ALL modern wallets
+        
+        let availableWallets = [];
+        
+        function discoverWallets() {
+            const wallets = [];
+            
+            // Method 1: Check window.sui (universal Sui interface)
+            if (window.sui) {
+                wallets.push({
+                    name: 'Sui Wallet',
+                    icon: '⚡',
+                    id: 'suiwallet',
+                    provider: window.sui
+                });
+            }
+            
+            // Method 2: Check wallet-standard events
+            if (window.__suiWalletStandard) {
+                window.__suiWalletStandard.forEach(w => {
+                    if (!wallets.find(existing => existing.name === w.name)) {
+                        wallets.push({
+                            name: w.name,
+                            icon: getWalletIcon(w.name),
+                            id: w.name.toLowerCase().replace(/\s/g, ''),
+                            provider: w
+                        });
                     }
-                    return w.account?.address || w.address;
+                });
+            }
+            
+            // Method 3: Check individual wallet globals (fallback)
+            const checks = [
+                { name: 'Suiet', icon: '💧', id: 'suiet', check: () => window.suiet || window.suietWallet },
+                { name: 'Slush', icon: '🧊', id: 'slush', check: () => window.slush || window.slushWallet },
+                { name: 'Phantom', icon: '👻', id: 'phantom', check: () => window.phantom?.sui },
+                { name: 'Martian', icon: '👽', id: 'martian', check: () => window.martian || window.martianSui },
+                { name: 'Ethos', icon: '🔮', id: 'ethos', check: () => window.ethos || window.ethosWallet },
+                { name: 'Nightly', icon: '🌙', id: 'nightly', check: () => window.nightly || window.nightlySui },
+                { name: 'OKX', icon: '🔷', id: 'okx', check: () => window.okxwallet?.sui || window.okxwallet }
+            ];
+            
+            checks.forEach(w => {
+                try {
+                    const provider = w.check();
+                    if (provider && !wallets.find(existing => existing.id === w.id)) {
+                        wallets.push({
+                            name: w.name,
+                            icon: w.icon,
+                            id: w.id,
+                            provider: provider
+                        });
+                    }
+                } catch(e) {}
+            });
+            
+            return wallets;
+        }
+        
+        function getWalletIcon(name) {
+            const icons = {
+                'Suiet': '💧',
+                'Slush': '🧊',
+                'Phantom': '👻',
+                'Martian': '👽',
+                'Ethos': '🔮',
+                'Sui Wallet': '⚡',
+                'Nightly': '🌙',
+                'OKX': '🔷'
+            };
+            return icons[name] || '🔐';
+        }
+
+        // Connect to a wallet using standard methods
+        async function standardConnect(wallet) {
+            const provider = wallet.provider;
+            
+            // Try multiple connection strategies
+            const strategies = [
+                // Strategy 1: Standard connect()
+                async () => {
+                    if (provider.connect) {
+                        const res = await provider.connect();
+                        return res?.address || res?.publicKey || res?.account?.address;
+                    }
+                    return null;
+                },
+                // Strategy 2: getAccounts()
+                async () => {
+                    if (provider.getAccounts) {
+                        const accounts = await provider.getAccounts();
+                        if (accounts && accounts.length > 0) {
+                            return accounts[0].address || accounts[0];
+                        }
+                    }
+                    return null;
+                },
+                // Strategy 3: requestPermissions then getAccounts
+                async () => {
+                    if (provider.requestPermissions) {
+                        await provider.requestPermissions();
+                        if (provider.getAccounts) {
+                            const accounts = await provider.getAccounts();
+                            if (accounts && accounts.length > 0) {
+                                return accounts[0].address || accounts[0];
+                            }
+                        }
+                    }
+                    return null;
+                },
+                // Strategy 4: Direct property access
+                async () => {
+                    return provider.address || provider.account?.address || provider.selectedAddress;
                 }
-            },
-            { 
-                id: 'slush', 
-                name: 'Slush', 
-                icon: '🧊', 
-                check: () => window.slush || window.slushWallet,
-                getAddress: async () => {
-                    const w = window.slush || window.slushWallet;
-                    if (!w) return null;
-                    if (w.connect) {
-                        const res = await w.connect();
-                        return res?.address || res?.publicKey;
+            ];
+            
+            for (const strategy of strategies) {
+                try {
+                    const address = await strategy();
+                    if (address && address.toString().startsWith('0x')) {
+                        return address.toString();
                     }
-                    return w.account?.address;
-                }
-            },
-            { 
-                id: 'phantom', 
-                name: 'Phantom', 
-                icon: '👻', 
-                check: () => window.phantom?.sui,
-                getAddress: async () => {
-                    const w = window.phantom?.sui;
-                    if (!w) return null;
-                    if (w.connect) {
-                        await w.connect();
-                        return w.publicKey;
-                    }
-                    return w.account?.address;
-                }
-            },
-            { 
-                id: 'martian', 
-                name: 'Martian', 
-                icon: '👽', 
-                check: () => window.martian || window.martianSui || window.martianWallet,
-                getAddress: async () => {
-                    const w = window.martian || window.martianSui || window.martianWallet;
-                    if (!w) return null;
-                    if (w.connect) {
-                        const res = await w.connect();
-                        return res?.address;
-                    }
-                    if (w.getAccounts) {
-                        const acc = await w.getAccounts();
-                        return acc?.[0]?.address || acc?.[0];
-                    }
-                    return w.account?.address;
-                }
-            },
-            { 
-                id: 'ethos', 
-                name: 'Ethos', 
-                icon: '🔮', 
-                check: () => window.ethos || window.ethosWallet,
-                getAddress: async () => {
-                    const w = window.ethos || window.ethosWallet;
-                    if (!w) return null;
-                    if (w.connect) {
-                        const res = await w.connect();
-                        return res?.address;
-                    }
-                    return w.account?.address || w.address;
-                }
-            },
-            { 
-                id: 'suiwallet', 
-                name: 'Sui Wallet', 
-                icon: '⚡', 
-                check: () => window.sui || window.suiWallet,
-                getAddress: async () => {
-                    const w = window.sui || window.suiWallet;
-                    if (!w) return null;
-                    if (w.requestPermissions) {
-                        await w.requestPermissions();
-                        const acc = await w.getAccounts();
-                        return acc?.[0]?.address || acc?.[0];
-                    }
-                    return w.account?.address;
-                }
-            },
-            { 
-                id: 'nightly', 
-                name: 'Nightly', 
-                icon: '🌙', 
-                check: () => window.nightly || window.nightlySui,
-                getAddress: async () => {
-                    const w = window.nightly || window.nightlySui;
-                    if (!w) return null;
-                    return w.account?.address;
-                }
-            },
-            { 
-                id: 'okx', 
-                name: 'OKX', 
-                icon: '🔷', 
-                check: () => window.okxwallet?.sui || window.okxwallet,
-                getAddress: async () => {
-                    const w = window.okxwallet?.sui || window.okxwallet;
-                    if (!w) return null;
-                    if (w.connect) {
-                        await w.connect();
-                    }
-                    return w.account?.address || w.selectedAddress;
+                } catch (err) {
+                    console.log(`Strategy failed for ${wallet.name}:`, err.message);
                 }
             }
-        ];
+            
+            throw new Error('All connection strategies failed');
+        }
 
+        // ===== STATE =====
         let walletAddress = null;
         let currentWallet = null;
         let currentAgent = null;
@@ -852,11 +852,17 @@
             { id: 'j18', name: 'J18', role: 'THE FLOW', trait: 'ADAPTABLE', image: 'assets/J18.jpg' }
         ];
 
-        // Init
+        // ===== INIT =====
         document.addEventListener('DOMContentLoaded', () => {
             loadAgents();
             checkSavedWallet();
             populateWalletList();
+            
+            // Listen for wallet-standard register events
+            window.addEventListener('wallet-standard:register', (e) => {
+                console.log('Wallet registered:', e.detail);
+                populateWalletList();
+            });
         });
 
         function checkSavedWallet() {
@@ -873,64 +879,152 @@
             const list = document.getElementById('walletList');
             list.innerHTML = '';
             
-            WALLET_CONFIG.forEach(wallet => {
-                const isDetected = wallet.check();
-                const div = document.createElement('div');
-                div.className = 'wallet-item-simple';
-                div.onclick = () => connectWallet(wallet.id);
+            availableWallets = discoverWallets();
+            
+            if (availableWallets.length === 0) {
+                // Show all as not detected but clickable
+                const allWallets = [
+                    { name: 'Suiet', icon: '💧', id: 'suiet' },
+                    { name: 'Slush', icon: '🧊', id: 'slush' },
+                    { name: 'Phantom', icon: '👻', id: 'phantom' },
+                    { name: 'Martian', icon: '👽', id: 'martian' },
+                    { name: 'Ethos', icon: '🔮', id: 'ethos' },
+                    { name: 'Sui Wallet', icon: '⚡', id: 'suiwallet' },
+                    { name: 'Nightly', icon: '🌙', id: 'nightly' },
+                    { name: 'OKX', icon: '🔷', id: 'okx' }
+                ];
                 
-                div.innerHTML = `
-                    <div class="wallet-logo">${wallet.icon}</div>
-                    <span>${wallet.name}</span>
-                    <span class="status ${isDetected ? 'detected' : ''}">${isDetected ? 'Detected' : 'Not installed'}</span>
-                `;
-                list.appendChild(div);
-            });
+                allWallets.forEach(w => {
+                    const div = document.createElement('div');
+                    div.className = 'wallet-item-simple';
+                    div.onclick = () => tryConnectAny(w.id);
+                    div.innerHTML = `
+                        <div class="wallet-logo">${w.icon}</div>
+                        <span>${w.name}</span>
+                        <span class="status">Not detected</span>
+                    `;
+                    list.appendChild(div);
+                });
+            } else {
+                // Show detected wallets first
+                availableWallets.forEach(w => {
+                    const div = document.createElement('div');
+                    div.className = 'wallet-item-simple';
+                    div.onclick = () => connectWallet(w);
+                    div.innerHTML = `
+                        <div class="wallet-logo">${w.icon}</div>
+                        <span>${w.name}</span>
+                        <span class="status" style="color:#0f0; font-weight:600;">Detected</span>
+                    `;
+                    list.appendChild(div);
+                });
+                
+                // Show undetected wallets
+                const detectedIds = availableWallets.map(w => w.id);
+                const others = [
+                    { name: 'Suiet', icon: '💧', id: 'suiet' },
+                    { name: 'Slush', icon: '🧊', id: 'slush' },
+                    { name: 'Phantom', icon: '👻', id: 'phantom' },
+                    { name: 'Martian', icon: '👽', id: 'martian' },
+                    { name: 'Ethos', icon: '🔮', id: 'ethos' },
+                    { name: 'Sui Wallet', icon: '⚡', id: 'suiwallet' },
+                    { name: 'Nightly', icon: '🌙', id: 'nightly' },
+                    { name: 'OKX', icon: '🔷', id: 'okx' }
+                ].filter(w => !detectedIds.includes(w.id));
+                
+                others.forEach(w => {
+                    const div = document.createElement('div');
+                    div.className = 'wallet-item-simple';
+                    div.onclick = () => tryConnectAny(w.id);
+                    div.innerHTML = `
+                        <div class="wallet-logo">${w.icon}</div>
+                        <span>${w.name}</span>
+                        <span class="status">Not detected</span>
+                    `;
+                    list.appendChild(div);
+                });
+            }
         }
 
         function showWalletModal() {
             document.getElementById('walletModal').classList.add('active');
-            populateWalletList(); // Refresh detection status
+            populateWalletList();
         }
 
         function closeWalletModal() {
             document.getElementById('walletModal').classList.remove('active');
         }
 
-        async function connectWallet(walletId) {
-            const config = WALLET_CONFIG.find(w => w.id === walletId);
-            if (!config) return;
-
-            const statusEl = document.querySelector(`#walletList .wallet-item-simple:nth-child(${WALLET_CONFIG.indexOf(config) + 1}) .status`);
-            if (statusEl) {
-                statusEl.textContent = 'Connecting...';
-                statusEl.className = 'status';
-            }
-
+        async function connectWallet(wallet) {
             try {
-                const address = await config.getAddress();
+                const address = await standardConnect(wallet);
                 
-                if (!address || !address.toString().startsWith('0x')) {
+                if (!address) {
                     throw new Error('No address returned');
                 }
-
-                walletAddress = address.toString();
-                currentWallet = config.name;
-
+                
+                walletAddress = address;
+                currentWallet = wallet.name;
+                
                 sessionStorage.setItem('riot_wallet_address', walletAddress);
                 sessionStorage.setItem('riot_wallet_name', currentWallet);
-
+                
                 closeWalletModal();
                 updateWalletUI(true);
-
+                
             } catch (err) {
-                console.error('Wallet connect error:', err);
-                if (statusEl) {
-                    statusEl.textContent = 'Failed — unlock wallet';
-                    statusEl.className = 'status failed';
-                }
-                setTimeout(() => populateWalletList(), 2000);
+                console.error('Connect error:', err);
+                alert(`${wallet.name}: ${err.message}. Please unlock your wallet and try again.`);
             }
+        }
+
+        async function tryConnectAny(walletId) {
+            // Try to find provider by ID
+            let provider = null;
+            let name = '';
+            
+            switch(walletId) {
+                case 'suiet': 
+                    provider = window.suiet || window.suietWallet; 
+                    name = 'Suiet';
+                    break;
+                case 'slush': 
+                    provider = window.slush || window.slushWallet; 
+                    name = 'Slush';
+                    break;
+                case 'phantom': 
+                    provider = window.phantom?.sui; 
+                    name = 'Phantom';
+                    break;
+                case 'martian': 
+                    provider = window.martian || window.martianSui; 
+                    name = 'Martian';
+                    break;
+                case 'ethos': 
+                    provider = window.ethos || window.ethosWallet; 
+                    name = 'Ethos';
+                    break;
+                case 'suiwallet': 
+                    provider = window.sui || window.suiWallet; 
+                    name = 'Sui Wallet';
+                    break;
+                case 'nightly': 
+                    provider = window.nightly || window.nightlySui; 
+                    name = 'Nightly';
+                    break;
+                case 'okx': 
+                    provider = window.okxwallet?.sui || window.okxwallet; 
+                    name = 'OKX';
+                    break;
+            }
+            
+            if (!provider) {
+                alert(`${name} not detected. Please install the extension or use manual input.`);
+                return;
+            }
+            
+            const wallet = { name, id: walletId, provider };
+            await connectWallet(wallet);
         }
 
         function connectManual() {
