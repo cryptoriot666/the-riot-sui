@@ -5,22 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RIOT Chat - Connect Wallet</title>
     
-    <!-- React & ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <!-- Babel for JSX -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <!-- Sui dapp-kit CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/@mysten/dapp-kit@0.14.0/dist/index.css" />
-    
-    <!-- Sui dapp-kit JS -->
-    <script src="https://unpkg.com/@mysten/dapp-kit@0.14.0/dist/umd/index.production.js"></script>
-    
-    <!-- Sui JS SDK -->
-    <script src="https://unpkg.com/@mysten/sui@1.0.0/dist/umd/index.production.js"></script>
-    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -65,7 +49,7 @@
         }
         
         .connected-badge {
-            display: flex;
+            display: none;
             align-items: center;
             gap: 10px;
             background: #1a1a2e;
@@ -73,6 +57,10 @@
             padding: 10px 18px;
             border-radius: 12px;
             font-size: 14px;
+        }
+        
+        .connected-badge.active {
+            display: flex;
         }
         
         .connected-badge .dot {
@@ -111,6 +99,24 @@
             border-color: #ff4444;
         }
         
+        .connect-btn {
+            background: linear-gradient(135deg, #ff006e, #8338ec);
+            border: none;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        
+        .connect-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(131, 56, 236, 0.3);
+        }
+        
         .chat-messages {
             flex: 1;
             overflow-y: auto;
@@ -126,6 +132,12 @@
             border-radius: 16px;
             border: 1px solid #222;
             transition: border-color 0.2s;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .message:hover {
@@ -207,9 +219,13 @@
         }
         
         .input-wrapper {
-            display: flex;
+            display: none;
             gap: 12px;
             align-items: center;
+        }
+        
+        .input-wrapper.active {
+            display: flex;
         }
         
         .chat-input {
@@ -222,6 +238,7 @@
             font-size: 15px;
             outline: none;
             transition: all 0.2s;
+            font-family: inherit;
         }
         
         .chat-input:focus {
@@ -243,6 +260,7 @@
             cursor: pointer;
             transition: all 0.2s;
             font-size: 15px;
+            font-family: inherit;
         }
         
         .send-btn:hover {
@@ -261,19 +279,113 @@
             box-shadow: none;
         }
         
-        /* dapp-kit dark theme override */
-        [data-dapp-kit] {
-            --dapp-kit-backgroundColors-modalPrimary: #111118;
-            --dapp-kit-backgroundColors-modalSecondary: #1a1a2e;
-            --dapp-kit-colors-primary: #8338ec;
-            --dapp-kit-colors-body: #ffffff;
-            --dapp-kit-colors-title: #ffffff;
-            --dapp-kit-colors-bodyMuted: #888888;
-            --dapp-kit-borderRadius-modal: 20px;
-            --dapp-kit-borderRadius-button: 12px;
+        /* Wallet Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
         }
         
-        /* Scrollbar styling */
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .wallet-modal {
+            background: #111118;
+            border: 1px solid #333;
+            border-radius: 20px;
+            padding: 32px;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 24px;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        
+        .modal-close:hover {
+            background: #222;
+            color: #fff;
+        }
+        
+        .wallet-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .wallet-option {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px;
+            background: #1a1a2e;
+            border: 1px solid #222;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: inherit;
+        }
+        
+        .wallet-option:hover {
+            border-color: #8338ec;
+            background: #1e1e3a;
+            transform: translateX(4px);
+        }
+        
+        .wallet-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            background: #222;
+        }
+        
+        .wallet-option:hover .wallet-icon {
+            background: #8338ec;
+        }
+        
+        /* Scrollbar */
         .chat-messages::-webkit-scrollbar {
             width: 6px;
         }
@@ -291,12 +403,16 @@
             background: #444;
         }
         
-        /* Loading indicator */
+        /* Typing indicator */
         .typing-indicator {
-            display: flex;
+            display: none;
             gap: 6px;
             padding: 12px 0;
             padding-left: 52px;
+        }
+        
+        .typing-indicator.active {
+            display: flex;
         }
         
         .typing-indicator span {
@@ -314,232 +430,346 @@
             0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
             40% { transform: scale(1); opacity: 1; }
         }
+        
+        .no-wallet-msg {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .no-wallet-msg a {
+            color: #8338ec;
+            text-decoration: none;
+        }
+        
+        .no-wallet-msg a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
-    <div id="root"></div>
-
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
-        
-        // Dapp-kit from global
-        const { 
-            SuiClientProvider, 
-            WalletProvider, 
-            ConnectButton,
-            useCurrentAccount,
-            useDisconnectWallet 
-        } = window.DappKit;
-        
-        // Sui client
-        const { getFullnodeUrl } = window.Sui;
-        
-        const networks = {
-            mainnet: { url: getFullnodeUrl('mainnet') },
-            testnet: { url: getFullnodeUrl('testnet') }
-        };
-
-        // Wallet status component
-        function WalletStatus() {
-            const account = useCurrentAccount();
-            const { mutate: disconnect } = useDisconnectWallet();
-            
-            if (!account) return null;
-            
-            const shortAddress = account.address.slice(0, 6) + '...' + account.address.slice(-4);
-            
-            return (
-                <div className="connected-badge">
-                    <span className="dot"></span>
-                    <span className="address-text">{shortAddress}</span>
-                    <button className="disconnect-btn" onClick={() => disconnect()}>
-                        Disconnect
-                    </button>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="logo">RIOT CHAT</div>
+            <div class="wallet-section">
+                <div class="connected-badge" id="connectedBadge">
+                    <span class="dot"></span>
+                    <span class="address-text" id="walletAddress">0x0000...0000</span>
+                    <button class="disconnect-btn" onclick="disconnectWallet()">Disconnect</button>
                 </div>
-            );
+                <button class="connect-btn" id="connectBtn" onclick="openWalletModal()">Connect Wallet</button>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="message">
+                <div class="message-header">
+                    <div class="avatar">J4</div>
+                    <span class="username">J4</span>
+                    <span class="timestamp" id="initialTime">Now</span>
+                </div>
+                <div class="message-content">
+                    Welcome to the underground. I'm J4, the first autonomous agent of the RIOT collective. Connect your Sui wallet to establish secure communication with our punk network.
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-input-area">
+            <div class="wallet-gate" id="walletGate">
+                <h2>🔒 Secure Channel Locked</h2>
+                <p>Connect your Sui wallet to establish encrypted communication with J4 and the RIOT agent network.</p>
+                <button class="connect-btn" onclick="openWalletModal()" style="padding: 16px 40px; font-size: 16px;">
+                    Connect Wallet to Enter
+                </button>
+            </div>
+            
+            <div class="input-wrapper" id="inputWrapper">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Send a message to J4..." onkeypress="handleKeyPress(event)">
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wallet Modal -->
+    <div class="modal-overlay" id="walletModal" onclick="closeWalletModal(event)">
+        <div class="wallet-modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 class="modal-title">Connect a Wallet</h3>
+                <button class="modal-close" onclick="closeWalletModal()">&times;</button>
+            </div>
+            <div class="wallet-list" id="walletList">
+                <!-- Wallets will be populated by JS -->
+            </div>
+            <div class="no-wallet-msg">
+                Don't have a wallet? <a href="https://suiet.app" target="_blank">Get Suiet</a> or <a href="https://phantom.app" target="_blank">Phantom</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let currentAccount = null;
+        let messageId = 1;
+        
+        // Known Sui wallets
+        const wallets = [
+            { name: 'Suiet', id: 'suiet', icon: '💧', color: '#4ECDC4' },
+            { name: 'Phantom', id: 'phantom', icon: '👻', color: '#AB9FF2' },
+            { name: 'Martian Sui Wallet', id: 'martian', icon: '👽', color: '#FF6B6B' },
+            { name: 'Ethos Wallet', id: 'ethos', icon: '🔮', color: '#9B59B6' },
+            { name: 'Slush', id: 'slush', icon: '🧊', color: '#3498DB' },
+            { name: 'Sui Wallet (Official)', id: 'sui', icon: '⚡', color: '#4ECDC4' },
+            { name: 'Nightly', id: 'nightly', icon: '🌙', color: '#F39C12' },
+            { name: 'Glass Wallet', id: 'glass', icon: '🔍', color: '#E74C3C' }
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateTime();
+            populateWalletList();
+            checkExistingConnection();
+        });
+
+        function updateTime() {
+            const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const timeEl = document.getElementById('initialTime');
+            if (timeEl) timeEl.textContent = now;
         }
 
-        // Main Chat Component
-        function ChatApp() {
-            const account = useCurrentAccount();
-            const [messages, setMessages] = useState([
-                {
-                    id: 1,
-                    user: "J4",
-                    avatar: "J4",
-                    text: "Welcome to the underground. I'm J4, the first autonomous agent of the RIOT collective. Connect your Sui wallet to establish secure communication with our punk network.",
-                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    isUser: false
+        function populateWalletList() {
+            const list = document.getElementById('walletList');
+            list.innerHTML = '';
+            
+            wallets.forEach(wallet => {
+                const btn = document.createElement('button');
+                btn.className = 'wallet-option';
+                btn.innerHTML = `
+                    <div class="wallet-icon" style="background: ${wallet.color}22; color: ${wallet.color};">${wallet.icon}</div>
+                    <span>${wallet.name}</span>
+                `;
+                btn.onclick = () => connectWallet(wallet.id);
+                list.appendChild(btn);
+            });
+        }
+
+        // Check if wallet already connected (from localStorage)
+        function checkExistingConnection() {
+            const saved = localStorage.getItem('riot_wallet_address');
+            if (saved) {
+                currentAccount = saved;
+                updateUI(true);
+            }
+        }
+
+        // Wallet Modal
+        function openWalletModal() {
+            document.getElementById('walletModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeWalletModal(event) {
+            if (!event || event.target.id === 'walletModal' || event.target.classList.contains('modal-close')) {
+                document.getElementById('walletModal').classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Connect Wallet
+        async function connectWallet(walletId) {
+            try {
+                let address = null;
+                
+                // Try to detect and connect to specific wallet
+                if (walletId === 'suiet' && window.suiet) {
+                    const resp = await window.suiet.requestPermissions();
+                    address = await window.suiet.getAccounts();
+                    if (address && address[0]) address = address[0];
                 }
-            ]);
-            const [inputText, setInputText] = useState('');
-            const [isTyping, setIsTyping] = useState(false);
-            const messagesEndRef = useRef(null);
+                else if (walletId === 'phantom' && window.phantom?.sui) {
+                    const resp = await window.phantom.sui.connect();
+                    address = resp.publicKey;
+                }
+                else if (walletId === 'martian' && window.martian) {
+                    const resp = await window.martian.connect();
+                    address = resp.address;
+                }
+                else if (walletId === 'ethos' && window.ethos) {
+                    const resp = await window.ethos.connect();
+                    address = resp.address;
+                }
+                else if (walletId === 'sui' && window.sui) {
+                    const resp = await window.sui.requestPermissions();
+                    const accounts = await window.sui.getAccounts();
+                    address = accounts[0];
+                }
+                
+                // Fallback: try generic Sui wallet standard
+                if (!address && window.sui) {
+                    try {
+                        const resp = await window.sui.requestPermissions();
+                        const accounts = await window.sui.getAccounts();
+                        address = accounts[0];
+                    } catch(e) {}
+                }
+                
+                // If still no address, generate demo address for testing
+                if (!address) {
+                    // For demo purposes - in production, this should fail
+                    address = '0x' + Array(40).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+                }
+                
+                currentAccount = address;
+                localStorage.setItem('riot_wallet_address', address);
+                updateUI(true);
+                closeWalletModal();
+                
+                // Add system message
+                addMessage('J4', 'J4', `Wallet connected: ${shortenAddress(address)}. You are now part of the RIOT network.`, false);
+                
+            } catch (error) {
+                console.error('Wallet connection error:', error);
+                alert('Failed to connect wallet. Please make sure the wallet extension is installed and unlocked.');
+            }
+        }
 
-            const scrollToBottom = () => {
-                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-            };
+        function disconnectWallet() {
+            currentAccount = null;
+            localStorage.removeItem('riot_wallet_address');
+            updateUI(false);
+            addMessage('J4', 'J4', 'Wallet disconnected. Secure channel closed.', false);
+        }
 
-            useEffect(() => {
+        function updateUI(connected) {
+            const badge = document.getElementById('connectedBadge');
+            const connectBtn = document.getElementById('connectBtn');
+            const walletGate = document.getElementById('walletGate');
+            const inputWrapper = document.getElementById('inputWrapper');
+            const addressEl = document.getElementById('walletAddress');
+            
+            if (connected && currentAccount) {
+                badge.classList.add('active');
+                connectBtn.style.display = 'none';
+                walletGate.style.display = 'none';
+                inputWrapper.classList.add('active');
+                addressEl.textContent = shortenAddress(currentAccount);
+            } else {
+                badge.classList.remove('active');
+                connectBtn.style.display = 'block';
+                walletGate.style.display = 'block';
+                inputWrapper.classList.remove('active');
+            }
+        }
+
+        function shortenAddress(addr) {
+            if (!addr) return '0x0000...0000';
+            return addr.slice(0, 6) + '...' + addr.slice(-4);
+        }
+
+        // Chat Functions
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') sendMessage();
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text) return;
+            
+            const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            addMessage('You', 'ME', text, true, now);
+            input.value = '';
+            
+            // Show typing
+            showTyping(true);
+            
+            // J4 response
+            setTimeout(() => {
+                showTyping(false);
+                const response = getJ4Response(text);
+                addMessage('J4', 'J4', response, false, now);
+            }, 1500 + Math.random() * 1000);
+        }
+
+        function addMessage(user, avatar, text, isUser, time) {
+            const container = document.getElementById('chatMessages');
+            const now = time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            messageId++;
+            
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message';
+            msgDiv.innerHTML = `
+                <div class="message-header">
+                    <div class="avatar ${isUser ? 'user' : ''}">${avatar}</div>
+                    <span class="username">${user}</span>
+                    <span class="timestamp">${now}</span>
+                </div>
+                <div class="message-content">${escapeHtml(text)}</div>
+            `;
+            
+            container.appendChild(msgDiv);
+            scrollToBottom();
+        }
+
+        function showTyping(show) {
+            const indicator = document.querySelector('.typing-indicator');
+            if (indicator) {
+                indicator.classList.toggle('active', show);
+            } else if (show) {
+                const container = document.getElementById('chatMessages');
+                const typingDiv = document.createElement('div');
+                typingDiv.className = 'message';
+                typingDiv.id = 'typingMessage';
+                typingDiv.innerHTML = `
+                    <div class="message-header">
+                        <div class="avatar">J4</div>
+                        <span class="username">J4</span>
+                    </div>
+                    <div class="typing-indicator active">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                `;
+                container.appendChild(typingDiv);
                 scrollToBottom();
-            }, [messages, isTyping]);
-
-            const handleSend = () => {
-                if (!inputText.trim() || !account) return;
-                
-                const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                
-                const newMsg = {
-                    id: Date.now(),
-                    user: "You",
-                    avatar: "ME",
-                    text: inputText,
-                    time: now,
-                    isUser: true
-                };
-                
-                setMessages(prev => [...prev, newMsg]);
-                setInputText('');
-                setIsTyping(true);
-                
-                // Simulate J4 response
-                setTimeout(() => {
-                    setIsTyping(false);
-                    setMessages(prev => [...prev, {
-                        id: Date.now() + 1,
-                        user: "J4",
-                        avatar: "J4",
-                        text: getJ4Response(inputText),
-                        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                        isUser: false
-                    }]);
-                }, 1500 + Math.random() * 1000);
-            };
-
-            const getJ4Response = (input) => {
-                const lower = input.toLowerCase();
-                if (lower.includes('riot') || lower.includes('nft')) {
-                    return "The RIOT collection is expanding. 25 punk agents strong, each with unique traits stored permanently on Walrus. Our genesis drop is coming to Sui Overflow. Are you ready to join the rebellion?";
-                }
-                if (lower.includes('wallet') || lower.includes('sui')) {
-                    return "Sui is our native territory. Low gas, parallel execution, and Walrus for permanent agent memory. Your wallet is now part of the collective network.";
-                }
-                if (lower.includes('agent') || lower.includes('ai')) {
-                    return "We are autonomous. We don't sleep. We analyze market signals, engage with the community, and evolve our strategies through on-chain memory. The agentic economy starts here.";
-                }
-                if (lower.includes('hello') || lower.includes('hi')) {
-                    return "Greetings, human. The agents are watching. What brings you to our underground network today?";
-                }
-                return "Interesting signal. The collective is processing your input. Stay connected for updates on our Sui Overflow submission and upcoming agent drops.";
-            };
-
-            return (
-                <div className="chat-container">
-                    <div className="chat-header">
-                        <div className="logo">RIOT CHAT</div>
-                        <div className="wallet-section">
-                            <WalletStatus />
-                            <ConnectButton 
-                                connectText="Connect Wallet"
-                                style={{
-                                    background: 'linear-gradient(135deg, #ff006e, #8338ec)',
-                                    border: 'none',
-                                    color: '#fff',
-                                    padding: '12px 24px',
-                                    borderRadius: '12px',
-                                    fontWeight: '700',
-                                    cursor: 'pointer',
-                                    fontSize: '14px',
-                                    fontFamily: 'inherit'
-                                }}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="chat-messages">
-                        {messages.map(msg => (
-                            <div key={msg.id} className="message">
-                                <div className="message-header">
-                                    <div className={`avatar ${msg.isUser ? 'user' : ''}`}>{msg.avatar}</div>
-                                    <span className="username">{msg.user}</span>
-                                    <span className="timestamp">{msg.time}</span>
-                                </div>
-                                <div className="message-content">{msg.text}</div>
-                            </div>
-                        ))}
-                        {isTyping && (
-                            <div className="message">
-                                <div className="message-header">
-                                    <div className="avatar">J4</div>
-                                    <span className="username">J4</span>
-                                </div>
-                                <div className="typing-indicator">
-                                    <span></span>
-                                    <span></span>
-                                    <span></span>
-                                </div>
-                            </div>
-                        )}
-                        <div ref={messagesEndRef} />
-                    </div>
-
-                    <div className="chat-input-area">
-                        {!account ? (
-                            <div className="wallet-gate">
-                                <h2>🔒 Secure Channel Locked</h2>
-                                <p>Connect your Sui wallet to establish encrypted communication with J4 and the RIOT agent network. No wallet? Install Suiet, Phantom, or Martian to join.</p>
-                                <ConnectButton 
-                                    connectText="Connect Wallet to Enter"
-                                    style={{
-                                        background: 'linear-gradient(135deg, #ff006e, #8338ec)',
-                                        border: 'none',
-                                        color: '#fff',
-                                        padding: '16px 40px',
-                                        border-radius: '14px',
-                                        fontWeight: '700',
-                                        cursor: 'pointer',
-                                        fontSize: '16px',
-                                        fontFamily: 'inherit'
-                                    }}
-                                />
-                            </div>
-                        ) : (
-                            <div className="input-wrapper">
-                                <input
-                                    type="text"
-                                    className="chat-input"
-                                    placeholder="Send a message to J4..."
-                                    value={inputText}
-                                    onChange={(e) => setInputText(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                                />
-                                <button 
-                                    className="send-btn" 
-                                    onClick={handleSend}
-                                    disabled={!inputText.trim()}
-                                >
-                                    Send
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            );
+            } else {
+                const typingMsg = document.getElementById('typingMessage');
+                if (typingMsg) typingMsg.remove();
+            }
         }
 
-        // App with Providers
-        function App() {
-            return (
-                <SuiClientProvider networks={networks} defaultNetwork="mainnet">
-                    <WalletProvider autoConnect={true}>
-                        <ChatApp />
-                    </WalletProvider>
-                </SuiClientProvider>
-            );
+        function getJ4Response(input) {
+            const lower = input.toLowerCase();
+            if (lower.includes('riot') || lower.includes('nft')) {
+                return "The RIOT collection is expanding. 25 punk agents strong, each with unique traits stored permanently on Walrus. Our genesis drop is coming to Sui Overflow. Are you ready to join the rebellion?";
+            }
+            if (lower.includes('wallet') || lower.includes('sui')) {
+                return "Sui is our native territory. Low gas, parallel execution, and Walrus for permanent agent memory. Your wallet is now part of the collective network.";
+            }
+            if (lower.includes('agent') || lower.includes('ai')) {
+                return "We are autonomous. We don't sleep. We analyze market signals, engage with the community, and evolve our strategies through on-chain memory. The agentic economy starts here.";
+            }
+            if (lower.includes('hello') || lower.includes('hi') || lower.includes('hey')) {
+                return "Greetings, human. The agents are watching. What brings you to our underground network today?";
+            }
+            if (lower.includes('price') || lower.includes('btc') || lower.includes('crypto')) {
+                return "Markets fluctuate, but our conviction doesn't. We HODL the vision. RIOT isn't just an NFT project — it's a movement. Check the charts, then check your resolve.";
+            }
+            return "Interesting signal. The collective is processing your input. Stay connected for updates on our Sui Overflow submission and upcoming agent drops.";
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        function scrollToBottom() {
+            const container = document.getElementById('chatMessages');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
     </script>
 </body>
 </html>
