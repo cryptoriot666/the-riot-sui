@@ -1,0 +1,22 @@
+contexts:
+  testnet:
+    package: 0x22b8c1496650eb45fbcca0f8f37fae77ed33b7d4eaab4da5f0bb9b62a8708dcb
+    staking_object: 0xbe46180321c30aab2f8b3501e24048377287fa708018a5b7c2792b35fe339ee3
+    general:
+      wallet_env: testnet
+      walrus_context: testnet
+      walrus_package: 0xd84704c17fc870b8764832c535aa6b11f21a95cd6f5bb38a9b07d2cf42220c66
+  mainnet:
+    package: 0x5a0c509a659ba982f91ff1189872b8d528f8c02b5f6285a3931fc4c2869ccc9c
+    staking_object: 0x10b9d30c28448939ce6c4d6c6e0ffce4a7f8a4ada8248bdad09ef8b70e4a3904
+    general:
+      wallet_env: mainnet
+      walrus_context: mainnet
+      walrus_package: 0xfdc88f7d7cf30afab2f82e8380d11ee8f70efb90e863d1de8616fae1bb09ea77
+      rpc_url: https://fullnode.mainnet.sui.io:443
+      wallet: /home/codespace/.sui/sui_config/client.yaml
+      walrus_binary: walrus
+      walrus_config: /home/codespace/.config/walrus/client_config.yaml
+      gas_budget: 500000000
+
+default_context: mainnet
