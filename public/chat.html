@@ -3,331 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RIOT Chat - Connect Wallet</title>
-    
+    <title>$RIOT Chat — Wallet Identity + Persistent Memory</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
         body {
-            background: #0a0a0f;
+            background: #0a0a0a;
             color: #fff;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family: 'Courier New', monospace;
+            overflow-x: hidden;
             min-height: 100vh;
         }
-        
-        .chat-container {
-            max-width: 900px;
+        .glitch {
+            position: relative;
+            animation: glitch 2s infinite;
+        }
+        @keyframes glitch {
+            0%, 100% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(2px, -2px); }
+            60% { transform: translate(-2px, -2px); }
+            80% { transform: translate(2px, 2px); }
+        }
+        .header {
+            text-align: center;
+            padding: 40px 20px 30px;
+            border-bottom: 1px solid #ff0040;
+            position: relative;
+        }
+        .header h1 {
+            font-size: 3.5rem;
+            color: #ff0040;
+            text-shadow: 0 0 20px rgba(255, 0, 64, 0.5);
+            letter-spacing: -2px;
+        }
+        .header p {
+            font-size: 1.1rem;
+            color: #666;
+            margin-top: 10px;
+        }
+        .header .badge {
+            display: inline-block;
+            background: #ff0040;
+            color: #000;
+            padding: 5px 15px;
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        .back-link {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #ff0040;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        /* Wallet Bar */
+        .wallet-section {
+            max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
+            border-bottom: 1px solid #333;
         }
-        
-        .chat-header {
+        .wallet-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 0;
-            border-bottom: 1px solid #222;
-            margin-bottom: 20px;
-        }
-        
-        .logo {
-            font-size: 28px;
-            font-weight: 900;
-            background: linear-gradient(135deg, #ff006e 0%, #8338ec 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -1px;
-        }
-        
-        .wallet-section {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .connected-badge {
-            display: none;
-            align-items: center;
-            gap: 10px;
-            background: #1a1a2e;
+            background: #111;
             border: 1px solid #333;
-            padding: 10px 18px;
-            border-radius: 12px;
-            font-size: 14px;
-        }
-        
-        .connected-badge.active {
-            display: flex;
-        }
-        
-        .connected-badge .dot {
-            width: 8px;
-            height: 8px;
-            background: #00ff88;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        .address-text {
-            font-family: 'SF Mono', Monaco, monospace;
-            color: #aaa;
-            font-size: 13px;
-        }
-        
-        .disconnect-btn {
-            background: transparent;
-            border: 1px solid #444;
-            color: #ff4444;
-            padding: 6px 14px;
+            padding: 15px 25px;
             border-radius: 8px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            transition: all 0.2s;
+            flex-wrap: wrap;
+            gap: 10px;
         }
-        
-        .disconnect-btn:hover {
-            background: #ff444422;
-            border-color: #ff4444;
-        }
-        
-        .connect-btn {
-            background: linear-gradient(135deg, #ff006e, #8338ec);
-            border: none;
-            color: #fff;
-            padding: 12px 24px;
-            border-radius: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            font-size: 14px;
-            font-family: inherit;
-            transition: all 0.2s;
-        }
-        
-        .connect-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(131, 56, 236, 0.3);
-        }
-        
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px 0;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-        
-        .message {
-            padding: 18px;
-            background: #111118;
-            border-radius: 16px;
-            border: 1px solid #222;
-            transition: border-color 0.2s;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .message:hover {
-            border-color: #333;
-        }
-        
-        .message-header {
+        .wallet-status {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 10px;
+            gap: 15px;
         }
-        
-        .avatar {
+        .wallet-icon {
             width: 40px;
             height: 40px;
+            background: #1a0005;
+            border: 2px solid #ff0040;
             border-radius: 50%;
-            background: linear-gradient(135deg, #ff006e, #8338ec);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 800;
-            font-size: 14px;
-            color: #fff;
-            flex-shrink: 0;
+            font-size: 1.2rem;
         }
-        
-        .avatar.user {
-            background: linear-gradient(135deg, #00ff88, #00cc6a);
-            color: #0a0a0f;
+        .wallet-icon.connected {
+            border-color: #0f0;
+            background: #0a1a0a;
         }
-        
-        .username {
-            font-weight: 700;
-            color: #fff;
-            font-size: 15px;
+        .wallet-info h3 {
+            color: #ff0040;
+            font-size: 1rem;
         }
-        
-        .timestamp {
+        .wallet-info h3.connected {
+            color: #0f0;
+        }
+        .wallet-info p {
             color: #666;
-            font-size: 12px;
-            margin-left: auto;
+            font-size: 0.8rem;
         }
-        
-        .message-content {
-            color: #ccc;
-            line-height: 1.7;
-            padding-left: 52px;
-            font-size: 15px;
-        }
-        
-        .chat-input-area {
-            padding: 20px 0;
-            border-top: 1px solid #222;
-        }
-        
-        .wallet-gate {
-            text-align: center;
-            padding: 50px 30px;
-            background: #111118;
-            border-radius: 20px;
-            border: 1px solid #222;
-        }
-        
-        .wallet-gate h2 {
-            margin-bottom: 12px;
-            color: #fff;
-            font-size: 22px;
-        }
-        
-        .wallet-gate p {
-            color: #888;
-            margin-bottom: 30px;
-            font-size: 15px;
-            line-height: 1.6;
-            max-width: 400px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        .input-wrapper {
-            display: none;
-            gap: 12px;
-            align-items: center;
-        }
-        
-        .input-wrapper.active {
-            display: flex;
-        }
-        
-        .chat-input {
-            flex: 1;
-            background: #1a1a2e;
-            border: 1px solid #333;
-            color: #fff;
-            padding: 16px 22px;
-            border-radius: 14px;
-            font-size: 15px;
-            outline: none;
-            transition: all 0.2s;
-            font-family: inherit;
-        }
-        
-        .chat-input:focus {
-            border-color: #8338ec;
-            box-shadow: 0 0 0 3px rgba(131, 56, 236, 0.1);
-        }
-        
-        .chat-input::placeholder {
-            color: #666;
-        }
-        
-        .send-btn {
-            background: linear-gradient(135deg, #ff006e, #8338ec);
+        .connect-btn {
+            background: #ff0040;
+            color: #000;
             border: none;
-            color: #fff;
-            padding: 16px 32px;
-            border-radius: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 15px;
+            padding: 12px 30px;
             font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            border-radius: 4px;
+            transition: all 0.2s;
         }
-        
-        .send-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(131, 56, 236, 0.3);
+        .connect-btn:hover {
+            background: #ff3366;
+            transform: translateY(-1px);
         }
-        
-        .send-btn:active {
-            transform: translateY(0);
+        .connect-btn.connected {
+            background: #0f0;
+            color: #000;
         }
-        
-        .send-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        
+
         /* Wallet Modal */
-        .modal-overlay {
+        .wallet-modal {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(8px);
-            z-index: 1000;
-            align-items: center;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
             justify-content: center;
-            animation: fadeIn 0.2s ease;
+            align-items: center;
         }
-        
-        .modal-overlay.active {
+        .wallet-modal.active {
             display: flex;
         }
-        
-        .wallet-modal {
-            background: #111118;
-            border: 1px solid #333;
-            border-radius: 20px;
-            padding: 32px;
+        .wallet-box {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
             width: 90%;
-            max-width: 400px;
-            position: relative;
+            max-width: 420px;
+            color: #000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
         }
-        
-        .modal-header {
+        .wallet-box-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
-        
-        .modal-title {
-            font-size: 20px;
-            font-weight: 700;
-            color: #fff;
+        .wallet-box-header h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
         }
-        
-        .modal-close {
+        .wallet-box-close {
             background: none;
             border: none;
-            color: #666;
-            font-size: 24px;
+            font-size: 1.5rem;
             cursor: pointer;
+            color: #666;
             width: 36px;
             height: 36px;
             display: flex;
@@ -336,440 +181,973 @@
             border-radius: 50%;
             transition: all 0.2s;
         }
-        
-        .modal-close:hover {
-            background: #222;
-            color: #fff;
+        .wallet-box-close:hover {
+            background: #f0f0f0;
+            color: #000;
         }
-        
-        .wallet-list {
+        .wallet-list-simple {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
-        
-        .wallet-option {
+        .wallet-item-simple {
             display: flex;
             align-items: center;
-            gap: 14px;
-            padding: 16px;
-            background: #1a1a2e;
-            border: 1px solid #222;
-            border-radius: 14px;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: 12px;
             cursor: pointer;
             transition: all 0.2s;
-            color: #fff;
-            font-size: 15px;
-            font-weight: 600;
-            font-family: inherit;
+            border: 1px solid #eee;
+            background: #fafafa;
         }
-        
-        .wallet-option:hover {
-            border-color: #8338ec;
-            background: #1e1e3a;
+        .wallet-item-simple:hover {
+            background: #f0f0f0;
+            border-color: #ccc;
             transform: translateX(4px);
         }
-        
-        .wallet-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
+        .wallet-item-simple .wallet-logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
-            background: #222;
+            font-size: 1.2rem;
+            background: #fff;
+            border: 1px solid #eee;
+        }
+        .wallet-item-simple span {
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        .wallet-item-simple .status {
+            margin-left: auto;
+            font-size: 0.8rem;
+            color: #999;
+        }
+        .wallet-item-simple .status.detected {
+            color: #0f0;
+            font-weight: 600;
+        }
+        .wallet-item-simple .status.failed {
+            color: #ff0040;
         }
         
-        .wallet-option:hover .wallet-icon {
-            background: #8338ec;
+        /* Manual Input Fallback */
+        .manual-input-section {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #eee;
         }
-        
-        /* Scrollbar */
-        .chat-messages::-webkit-scrollbar {
-            width: 6px;
+        .manual-input-section p {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 10px;
         }
-        
-        .chat-messages::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        
-        .chat-messages::-webkit-scrollbar-thumb {
-            background: #333;
-            border-radius: 3px;
-        }
-        
-        .chat-messages::-webkit-scrollbar-thumb:hover {
-            background: #444;
-        }
-        
-        /* Typing indicator */
-        .typing-indicator {
-            display: none;
-            gap: 6px;
-            padding: 12px 0;
-            padding-left: 52px;
-        }
-        
-        .typing-indicator.active {
+        .manual-input-row {
             display: flex;
+            gap: 8px;
         }
-        
-        .typing-indicator span {
-            width: 8px;
-            height: 8px;
-            background: #8338ec;
-            border-radius: 50%;
-            animation: typing 1.4s infinite ease-in-out both;
+        .manual-input-row input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: 'SF Mono', monospace;
         }
-        
-        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
-        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
-        
-        @keyframes typing {
-            0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
-            40% { transform: scale(1); opacity: 1; }
+        .manual-input-row input:focus {
+            outline: none;
+            border-color: #8338ec;
+        }
+        .manual-input-row button {
+            padding: 12px 20px;
+            background: #111;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .manual-input-row button:hover {
+            background: #333;
         }
         
         .no-wallet-msg {
             text-align: center;
-            padding: 20px;
-            color: #666;
-            font-size: 14px;
+            padding: 16px 0 0;
+            color: #888;
+            font-size: 0.85rem;
         }
-        
         .no-wallet-msg a {
             color: #8338ec;
             text-decoration: none;
+            font-weight: 500;
         }
-        
         .no-wallet-msg a:hover {
             text-decoration: underline;
         }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 40px 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .agent-card {
+            background: #111;
+            border: 1px solid #333;
+            cursor: pointer;
+            transition: all 0.3s;
+            overflow: hidden;
+        }
+        .agent-card:hover {
+            border-color: #ff0040;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(255, 0, 64, 0.3);
+        }
+        .agent-image-container {
+            width: 100%;
+            height: 300px;
+            background: #1a1a1a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .agent-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(30%);
+            transition: filter 0.3s;
+        }
+        .agent-card:hover .agent-image-container img {
+            filter: grayscale(0%);
+        }
+        .agent-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1a0005 0%, #0a0a0a 100%);
+            color: #ff0040;
+            font-size: 3rem;
+            font-weight: bold;
+        }
+        .agent-info {
+            padding: 20px;
+        }
+        .agent-name {
+            font-size: 1.5rem;
+            color: #ff0040;
+            font-weight: bold;
+        }
+        .agent-role {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        .agent-trait {
+            display: inline-block;
+            background: #222;
+            color: #ff0040;
+            padding: 3px 10px;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            border: 1px solid #ff0040;
+        }
+
+        /* Chat Modal */
+        .chat-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .chat-modal.active {
+            display: flex;
+        }
+        .chat-container {
+            width: 90%;
+            max-width: 700px;
+            height: 85vh;
+            background: #111;
+            border: 2px solid #ff0040;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-header {
+            padding: 20px;
+            border-bottom: 1px solid #ff0040;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #0a0a0a;
+        }
+        .chat-header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .chat-header-left img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border: 2px solid #ff0040;
+        }
+        .chat-header-info h3 {
+            color: #ff0040;
+            font-size: 1.3rem;
+        }
+        .chat-header-info p {
+            color: #666;
+            font-size: 0.85rem;
+        }
+        .close-btn {
+            background: none;
+            border: 1px solid #ff0040;
+            color: #ff0040;
+            padding: 8px 20px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+        .close-btn:hover {
+            background: #ff0040;
+            color: #000;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: #0a0a0a;
+        }
+        .message {
+            max-width: 80%;
+            padding: 15px 18px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message.user {
+            align-self: flex-end;
+            background: #1a1a1a;
+            border-left: 3px solid #666;
+            color: #fff;
+        }
+        .message.agent {
+            align-self: flex-start;
+            background: #1a0005;
+            border-left: 3px solid #ff0040;
+            color: #ffcccc;
+        }
+        .message .sender {
+            font-size: 0.8rem;
+            margin-bottom: 6px;
+            opacity: 0.7;
+            font-weight: bold;
+        }
+        .memory-tag {
+            font-size: 0.75rem;
+            color: #0f0;
+            margin-top: 8px;
+            font-style: italic;
+        }
+        .chat-input {
+            padding: 20px;
+            border-top: 1px solid #ff0040;
+            display: flex;
+            gap: 12px;
+            background: #0a0a0a;
+        }
+        .chat-input input {
+            flex: 1;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 14px 18px;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+        .chat-input input:focus {
+            outline: none;
+            border-color: #ff0040;
+        }
+        .chat-input button {
+            background: #ff0040;
+            color: #000;
+            border: none;
+            padding: 14px 28px;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .chat-input button:hover { background: #ff3366; }
+        .chat-input button:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 12px;
+            color: #ff0040;
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+        .loading.active { display: block; }
+
+        /* Save Modal */
+        .save-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+        }
+        .save-modal.active {
+            display: flex;
+        }
+        .save-container {
+            width: 90%;
+            max-width: 500px;
+            background: #111;
+            border: 2px solid #ff0040;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .save-container h2 {
+            color: #ff0040;
+            margin-bottom: 15px;
+        }
+        .save-container p {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 0.9rem;
+        }
+        .save-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .save-btn {
+            padding: 15px;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            border: 2px solid;
+            font-size: 1rem;
+        }
+        .save-quick {
+            background: #0a1a0a;
+            color: #0f0;
+            border-color: #0f0;
+        }
+        .save-full {
+            background: #1a0005;
+            color: #ff0040;
+            border-color: #ff0040;
+        }
+        .save-discard {
+            background: #1a1a1a;
+            color: #666;
+            border-color: #333;
+        }
+        .save-status {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            border-top: 1px solid #333;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .footer a {
+            color: #ff0040;
+            text-decoration: none;
+        }
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2.5rem; }
+            .wallet-box { max-width: 90%; }
+            .wallet-bar { flex-direction: column; align-items: flex-start; }
+        }
     </style>
+<base target="_blank">
 </head>
 <body>
-    <div class="chat-container">
-        <div class="chat-header">
-            <div class="logo">RIOT CHAT</div>
-            <div class="wallet-section">
-                <div class="connected-badge" id="connectedBadge">
-                    <span class="dot"></span>
-                    <span class="address-text" id="walletAddress">0x0000...0000</span>
-                    <button class="disconnect-btn" onclick="disconnectWallet()">Disconnect</button>
-                </div>
-                <button class="connect-btn" id="connectBtn" onclick="openWalletModal()">Connect Wallet</button>
-            </div>
-        </div>
+    <div class="header">
+        <a href="index.html" class="back-link">&larr; Back</a>
+        <h1 class="glitch">$RIOT</h1>
+        <p>A Collection of Punks. Permanent Memory. One Riot.</p>
+        <div class="badge">WALLET IDENTITY + WALRUS MEMORY</div>
+    </div>
 
-        <div class="chat-messages" id="chatMessages">
-            <div class="message">
-                <div class="message-header">
-                    <div class="avatar">J4</div>
-                    <span class="username">J4</span>
-                    <span class="timestamp" id="initialTime">Now</span>
+    <!-- Wallet Bar -->
+    <div class="wallet-section">
+        <div class="wallet-bar" id="walletBar">
+            <div class="wallet-status">
+                <div class="wallet-icon" id="walletIcon">🔐</div>
+                <div class="wallet-info">
+                    <h3 id="walletTitle">Connect Wallet</h3>
+                    <p id="walletDesc">Link wallet to enable memory</p>
                 </div>
-                <div class="message-content">
-                    Welcome to the underground. I'm J4, the first autonomous agent of the RIOT collective. Connect your Sui wallet to establish secure communication with our punk network.
-                </div>
             </div>
-        </div>
-
-        <div class="chat-input-area">
-            <div class="wallet-gate" id="walletGate">
-                <h2>🔒 Secure Channel Locked</h2>
-                <p>Connect your Sui wallet to establish encrypted communication with J4 and the RIOT agent network.</p>
-                <button class="connect-btn" onclick="openWalletModal()" style="padding: 16px 40px; font-size: 16px;">
-                    Connect Wallet to Enter
-                </button>
-            </div>
-            
-            <div class="input-wrapper" id="inputWrapper">
-                <input type="text" class="chat-input" id="chatInput" placeholder="Send a message to J4..." onkeypress="handleKeyPress(event)">
-                <button class="send-btn" id="sendBtn" onclick="sendMessage()">Send</button>
-            </div>
+            <button class="connect-btn" id="connectBtn" onclick="showWalletModal()">Connect</button>
         </div>
     </div>
 
     <!-- Wallet Modal -->
-    <div class="modal-overlay" id="walletModal" onclick="closeWalletModal(event)">
-        <div class="wallet-modal" onclick="event.stopPropagation()">
-            <div class="modal-header">
-                <h3 class="modal-title">Connect a Wallet</h3>
-                <button class="modal-close" onclick="closeWalletModal()">&times;</button>
+    <div class="wallet-modal" id="walletModal">
+        <div class="wallet-box">
+            <div class="wallet-box-header">
+                <h3>Connect a Wallet</h3>
+                <button class="wallet-box-close" onclick="closeWalletModal()">&times;</button>
             </div>
-            <div class="wallet-list" id="walletList">
-                <!-- Wallets will be populated by JS -->
+            <div class="wallet-list-simple" id="walletList">
+                <!-- Populated by JS -->
             </div>
+            
+            <!-- Manual Input Fallback -->
+            <div class="manual-input-section">
+                <p>Or paste your Sui address manually:</p>
+                <div class="manual-input-row">
+                    <input type="text" id="manualAddress" placeholder="0x..." maxlength="66">
+                    <button onclick="connectManual()">Connect</button>
+                </div>
+            </div>
+            
             <div class="no-wallet-msg">
-                Don't have a wallet? <a href="https://suiet.app" target="_blank">Get Suiet</a> or <a href="https://phantom.app" target="_blank">Phantom</a>
+                Need a wallet? <a href="https://suiet.app" target="_blank">Suiet</a> • 
+                <a href="https://phantom.app" target="_blank">Phantom</a> • 
+                <a href="https://martianwallet.xyz" target="_blank">Martian</a>
             </div>
         </div>
     </div>
 
+    <!-- Agent Grid -->
+    <div class="grid" id="agentGrid"></div>
+
+    <!-- Chat Modal -->
+    <div class="chat-modal" id="chatModal">
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="chat-header-left">
+                    <img id="chatAgentImg" src="" alt="Agent" style="display:none;">
+                    <div class="chat-header-info">
+                        <h3 id="chatTitle">J4</h3>
+                        <p id="chatSubtitle">THE FRONTMAN</p>
+                    </div>
+                </div>
+                <button class="close-btn" onclick="closeChat()">X</button>
+            </div>
+            <div class="chat-messages" id="chatMessages"></div>
+            <div class="loading" id="loading">Thinking...</div>
+            <div class="chat-input">
+                <input type="text" id="messageInput" placeholder="Speak to the punk..." onkeypress="handleKeyPress(event)">
+                <button id="sendBtn" onclick="sendMessage()">SEND</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Modal -->
+    <div class="save-modal" id="saveModal">
+        <div class="save-container">
+            <h2>Save Session?</h2>
+            <p>Your chat with <span id="saveAgentName">J4</span> will be lost unless saved.</p>
+            <div class="save-options">
+                <button class="save-btn save-quick" onclick="saveMemory('quick')">⚡ Quick Save</button>
+                <button class="save-btn save-full" onclick="saveMemory('full')">📄 Full Save</button>
+                <button class="save-btn save-discard" onclick="discardMemory()">🗑️ Discard</button>
+            </div>
+            <div class="save-status" id="saveStatus"></div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Hand-drawn by <a href="https://twitter.com/cryptoriot666" target="_blank">@cryptoriot666</a> &bull; 
+        <a href="https://walrus.xyz" target="_blank">Walrus</a> &bull; 
+        <a href="https://sui.io" target="_blank">Sui</a></p>
+    </div>
+
     <script>
-        // State
-        let currentAccount = null;
-        let messageId = 1;
-        
-        // Known Sui wallets
-        const wallets = [
-            { name: 'Suiet', id: 'suiet', icon: '💧', color: '#4ECDC4' },
-            { name: 'Phantom', id: 'phantom', icon: '👻', color: '#AB9FF2' },
-            { name: 'Martian Sui Wallet', id: 'martian', icon: '👽', color: '#FF6B6B' },
-            { name: 'Ethos Wallet', id: 'ethos', icon: '🔮', color: '#9B59B6' },
-            { name: 'Slush', id: 'slush', icon: '🧊', color: '#3498DB' },
-            { name: 'Sui Wallet (Official)', id: 'sui', icon: '⚡', color: '#4ECDC4' },
-            { name: 'Nightly', id: 'nightly', icon: '🌙', color: '#F39C12' },
-            { name: 'Glass Wallet', id: 'glass', icon: '🔍', color: '#E74C3C' }
+        // Enhanced wallet detection config
+        const WALLET_CONFIG = [
+            { 
+                id: 'suiet', 
+                name: 'Suiet', 
+                icon: '💧', 
+                check: () => window.suiet || window.suietWallet,
+                getAddress: async () => {
+                    const w = window.suiet || window.suietWallet;
+                    if (!w) return null;
+                    if (w.getAccounts) {
+                        const acc = await w.getAccounts();
+                        return acc?.[0]?.address || acc?.[0];
+                    }
+                    return w.account?.address || w.address;
+                }
+            },
+            { 
+                id: 'slush', 
+                name: 'Slush', 
+                icon: '🧊', 
+                check: () => window.slush || window.slushWallet,
+                getAddress: async () => {
+                    const w = window.slush || window.slushWallet;
+                    if (!w) return null;
+                    if (w.connect) {
+                        const res = await w.connect();
+                        return res?.address || res?.publicKey;
+                    }
+                    return w.account?.address;
+                }
+            },
+            { 
+                id: 'phantom', 
+                name: 'Phantom', 
+                icon: '👻', 
+                check: () => window.phantom?.sui,
+                getAddress: async () => {
+                    const w = window.phantom?.sui;
+                    if (!w) return null;
+                    if (w.connect) {
+                        await w.connect();
+                        return w.publicKey;
+                    }
+                    return w.account?.address;
+                }
+            },
+            { 
+                id: 'martian', 
+                name: 'Martian', 
+                icon: '👽', 
+                check: () => window.martian || window.martianSui || window.martianWallet,
+                getAddress: async () => {
+                    const w = window.martian || window.martianSui || window.martianWallet;
+                    if (!w) return null;
+                    if (w.connect) {
+                        const res = await w.connect();
+                        return res?.address;
+                    }
+                    if (w.getAccounts) {
+                        const acc = await w.getAccounts();
+                        return acc?.[0]?.address || acc?.[0];
+                    }
+                    return w.account?.address;
+                }
+            },
+            { 
+                id: 'ethos', 
+                name: 'Ethos', 
+                icon: '🔮', 
+                check: () => window.ethos || window.ethosWallet,
+                getAddress: async () => {
+                    const w = window.ethos || window.ethosWallet;
+                    if (!w) return null;
+                    if (w.connect) {
+                        const res = await w.connect();
+                        return res?.address;
+                    }
+                    return w.account?.address || w.address;
+                }
+            },
+            { 
+                id: 'suiwallet', 
+                name: 'Sui Wallet', 
+                icon: '⚡', 
+                check: () => window.sui || window.suiWallet,
+                getAddress: async () => {
+                    const w = window.sui || window.suiWallet;
+                    if (!w) return null;
+                    if (w.requestPermissions) {
+                        await w.requestPermissions();
+                        const acc = await w.getAccounts();
+                        return acc?.[0]?.address || acc?.[0];
+                    }
+                    return w.account?.address;
+                }
+            },
+            { 
+                id: 'nightly', 
+                name: 'Nightly', 
+                icon: '🌙', 
+                check: () => window.nightly || window.nightlySui,
+                getAddress: async () => {
+                    const w = window.nightly || window.nightlySui;
+                    if (!w) return null;
+                    return w.account?.address;
+                }
+            },
+            { 
+                id: 'okx', 
+                name: 'OKX', 
+                icon: '🔷', 
+                check: () => window.okxwallet?.sui || window.okxwallet,
+                getAddress: async () => {
+                    const w = window.okxwallet?.sui || window.okxwallet;
+                    if (!w) return null;
+                    if (w.connect) {
+                        await w.connect();
+                    }
+                    return w.account?.address || w.selectedAddress;
+                }
+            }
         ];
 
-        // Initialize
+        let walletAddress = null;
+        let currentWallet = null;
+        let currentAgent = null;
+        let chatHistory = [];
+
+        const agents = [
+            { id: 'j4', name: 'J4', role: 'THE FRONTMAN', trait: 'REBELLIOUS', image: 'assets/J4.jpg' },
+            { id: 'j1', name: 'J1', role: 'THE STRATEGIST', trait: 'CALCULATING', image: 'assets/J1.jpg' },
+            { id: 'j2', name: 'J2', role: 'THE FIRESTARTER', trait: 'AGGRESSIVE', image: 'assets/J2.jpg' },
+            { id: 'j3', name: 'J3', role: 'THE SILENT WATCHER', trait: 'MYSTERIOUS', image: 'assets/J3.jpg' },
+            { id: 'j5', name: 'J5', role: 'THE GLITCH', trait: 'CHAOTIC', image: 'assets/J5.jpg' },
+            { id: 'j6', name: 'J6', role: 'THE CONNECTOR', trait: 'NETWORKED', image: 'assets/J6.jpg' },
+            { id: 'j7', name: 'J7', role: 'THE RESET', trait: 'CALM', image: 'assets/J7.jpg' },
+            { id: 'j8', name: 'J8', role: 'THE DISRUPTOR', trait: 'UNPREDICTABLE', image: 'assets/J8.jpg' },
+            { id: 'j9', name: 'J9', role: 'THE VOICE', trait: 'PERSUASIVE', image: 'assets/J9.jpg' },
+            { id: 'j10', name: 'J10', role: 'THE ARTIST', trait: 'CREATIVE', image: 'assets/J10.jpg' },
+            { id: 'j11', name: 'J11', role: 'THE VENOM', trait: 'TOXIC', image: 'assets/J11.jpg' },
+            { id: 'j12', name: 'J12', role: 'THE ROT', trait: 'PATIENT', image: 'assets/J12.jpg' },
+            { id: 'j13', name: 'J13', role: 'THE GHOST', trait: 'FADING', image: 'assets/J13.jpg' },
+            { id: 'j14', name: 'J14', role: 'THE FRAGMENT', trait: 'BROKEN', image: 'assets/J14.jpg' },
+            { id: 'j15', name: 'J15', role: 'THE KEEPER', trait: 'PROTECTIVE', image: 'assets/J15.jpg' },
+            { id: 'j16', name: 'J16', role: 'THE REFLECTION', trait: 'DUAL', image: 'assets/J16.jpg' },
+            { id: 'j17', name: 'J17', role: 'THE RUMOR', trait: 'FAST', image: 'assets/J17.jpg' },
+            { id: 'j18', name: 'J18', role: 'THE FLOW', trait: 'ADAPTABLE', image: 'assets/J18.jpg' }
+        ];
+
+        // Init
         document.addEventListener('DOMContentLoaded', () => {
-            updateTime();
+            loadAgents();
+            checkSavedWallet();
             populateWalletList();
-            checkExistingConnection();
         });
 
-        function updateTime() {
-            const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const timeEl = document.getElementById('initialTime');
-            if (timeEl) timeEl.textContent = now;
+        function checkSavedWallet() {
+            const saved = sessionStorage.getItem('riot_wallet_address');
+            const savedName = sessionStorage.getItem('riot_wallet_name');
+            if (saved && saved.startsWith('0x')) {
+                walletAddress = saved;
+                currentWallet = savedName || 'Wallet';
+                updateWalletUI(true);
+            }
         }
 
         function populateWalletList() {
             const list = document.getElementById('walletList');
             list.innerHTML = '';
             
-            wallets.forEach(wallet => {
-                const btn = document.createElement('button');
-                btn.className = 'wallet-option';
-                btn.innerHTML = `
-                    <div class="wallet-icon" style="background: ${wallet.color}22; color: ${wallet.color};">${wallet.icon}</div>
+            WALLET_CONFIG.forEach(wallet => {
+                const isDetected = wallet.check();
+                const div = document.createElement('div');
+                div.className = 'wallet-item-simple';
+                div.onclick = () => connectWallet(wallet.id);
+                
+                div.innerHTML = `
+                    <div class="wallet-logo">${wallet.icon}</div>
                     <span>${wallet.name}</span>
+                    <span class="status ${isDetected ? 'detected' : ''}">${isDetected ? 'Detected' : 'Not installed'}</span>
                 `;
-                btn.onclick = () => connectWallet(wallet.id);
-                list.appendChild(btn);
+                list.appendChild(div);
             });
         }
 
-        // Check if wallet already connected (from localStorage)
-        function checkExistingConnection() {
-            const saved = localStorage.getItem('riot_wallet_address');
-            if (saved) {
-                currentAccount = saved;
-                updateUI(true);
-            }
-        }
-
-        // Wallet Modal
-        function openWalletModal() {
+        function showWalletModal() {
             document.getElementById('walletModal').classList.add('active');
-            document.body.style.overflow = 'hidden';
+            populateWalletList(); // Refresh detection status
         }
 
-        function closeWalletModal(event) {
-            if (!event || event.target.id === 'walletModal' || event.target.classList.contains('modal-close')) {
-                document.getElementById('walletModal').classList.remove('active');
-                document.body.style.overflow = '';
+        function closeWalletModal() {
+            document.getElementById('walletModal').classList.remove('active');
+        }
+
+        async function connectWallet(walletId) {
+            const config = WALLET_CONFIG.find(w => w.id === walletId);
+            if (!config) return;
+
+            const statusEl = document.querySelector(`#walletList .wallet-item-simple:nth-child(${WALLET_CONFIG.indexOf(config) + 1}) .status`);
+            if (statusEl) {
+                statusEl.textContent = 'Connecting...';
+                statusEl.className = 'status';
+            }
+
+            try {
+                const address = await config.getAddress();
+                
+                if (!address || !address.toString().startsWith('0x')) {
+                    throw new Error('No address returned');
+                }
+
+                walletAddress = address.toString();
+                currentWallet = config.name;
+
+                sessionStorage.setItem('riot_wallet_address', walletAddress);
+                sessionStorage.setItem('riot_wallet_name', currentWallet);
+
+                closeWalletModal();
+                updateWalletUI(true);
+
+            } catch (err) {
+                console.error('Wallet connect error:', err);
+                if (statusEl) {
+                    statusEl.textContent = 'Failed — unlock wallet';
+                    statusEl.className = 'status failed';
+                }
+                setTimeout(() => populateWalletList(), 2000);
             }
         }
 
-        // Connect Wallet
-        async function connectWallet(walletId) {
-            try {
-                let address = null;
-                
-                // Try to detect and connect to specific wallet
-                if (walletId === 'suiet' && window.suiet) {
-                    const resp = await window.suiet.requestPermissions();
-                    address = await window.suiet.getAccounts();
-                    if (address && address[0]) address = address[0];
-                }
-                else if (walletId === 'phantom' && window.phantom?.sui) {
-                    const resp = await window.phantom.sui.connect();
-                    address = resp.publicKey;
-                }
-                else if (walletId === 'martian' && window.martian) {
-                    const resp = await window.martian.connect();
-                    address = resp.address;
-                }
-                else if (walletId === 'ethos' && window.ethos) {
-                    const resp = await window.ethos.connect();
-                    address = resp.address;
-                }
-                else if (walletId === 'sui' && window.sui) {
-                    const resp = await window.sui.requestPermissions();
-                    const accounts = await window.sui.getAccounts();
-                    address = accounts[0];
-                }
-                
-                // Fallback: try generic Sui wallet standard
-                if (!address && window.sui) {
-                    try {
-                        const resp = await window.sui.requestPermissions();
-                        const accounts = await window.sui.getAccounts();
-                        address = accounts[0];
-                    } catch(e) {}
-                }
-                
-                // If still no address, generate demo address for testing
-                if (!address) {
-                    // For demo purposes - in production, this should fail
-                    address = '0x' + Array(40).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('');
-                }
-                
-                currentAccount = address;
-                localStorage.setItem('riot_wallet_address', address);
-                updateUI(true);
-                closeWalletModal();
-                
-                // Add system message
-                addMessage('J4', 'J4', `Wallet connected: ${shortenAddress(address)}. You are now part of the RIOT network.`, false);
-                
-            } catch (error) {
-                console.error('Wallet connection error:', error);
-                alert('Failed to connect wallet. Please make sure the wallet extension is installed and unlocked.');
+        function connectManual() {
+            const input = document.getElementById('manualAddress');
+            const address = input.value.trim();
+            
+            if (!address || !address.startsWith('0x') || address.length < 10) {
+                alert('Please enter a valid Sui address (starts with 0x)');
+                return;
+            }
+
+            walletAddress = address;
+            currentWallet = 'Manual';
+
+            sessionStorage.setItem('riot_wallet_address', walletAddress);
+            sessionStorage.setItem('riot_wallet_name', currentWallet);
+
+            input.value = '';
+            closeWalletModal();
+            updateWalletUI(true);
+        }
+
+        function updateWalletUI(connected) {
+            const btn = document.getElementById('connectBtn');
+            const title = document.getElementById('walletTitle');
+            const desc = document.getElementById('walletDesc');
+            const icon = document.getElementById('walletIcon');
+
+            if (connected && walletAddress) {
+                btn.textContent = 'Disconnect';
+                btn.classList.add('connected');
+                btn.onclick = disconnectWallet;
+                title.textContent = currentWallet + ' Connected';
+                title.classList.add('connected');
+                desc.textContent = walletAddress.slice(0,6) + '...' + walletAddress.slice(-4);
+                icon.textContent = '✅';
+                icon.classList.add('connected');
+            } else {
+                btn.textContent = 'Connect';
+                btn.classList.remove('connected');
+                btn.onclick = showWalletModal;
+                title.textContent = 'Connect Wallet';
+                title.classList.remove('connected');
+                desc.textContent = 'Link wallet to enable memory';
+                icon.textContent = '🔐';
+                icon.classList.remove('connected');
             }
         }
 
         function disconnectWallet() {
-            currentAccount = null;
-            localStorage.removeItem('riot_wallet_address');
-            updateUI(false);
-            addMessage('J4', 'J4', 'Wallet disconnected. Secure channel closed.', false);
+            walletAddress = null;
+            currentWallet = null;
+            sessionStorage.removeItem('riot_wallet_address');
+            sessionStorage.removeItem('riot_wallet_name');
+            updateWalletUI(false);
         }
 
-        function updateUI(connected) {
-            const badge = document.getElementById('connectedBadge');
-            const connectBtn = document.getElementById('connectBtn');
-            const walletGate = document.getElementById('walletGate');
-            const inputWrapper = document.getElementById('inputWrapper');
-            const addressEl = document.getElementById('walletAddress');
-            
-            if (connected && currentAccount) {
-                badge.classList.add('active');
-                connectBtn.style.display = 'none';
-                walletGate.style.display = 'none';
-                inputWrapper.classList.add('active');
-                addressEl.textContent = shortenAddress(currentAccount);
-            } else {
-                badge.classList.remove('active');
-                connectBtn.style.display = 'block';
-                walletGate.style.display = 'block';
-                inputWrapper.classList.remove('active');
-            }
-        }
+        function loadAgents() {
+            const grid = document.getElementById('agentGrid');
+            agents.forEach(agent => {
+                const card = document.createElement('div');
+                card.className = 'agent-card';
+                card.onclick = () => openChat(agent.id);
 
-        function shortenAddress(addr) {
-            if (!addr) return '0x0000...0000';
-            return addr.slice(0, 6) + '...' + addr.slice(-4);
-        }
-
-        // Chat Functions
-        function handleKeyPress(event) {
-            if (event.key === 'Enter') sendMessage();
-        }
-
-        function sendMessage() {
-            const input = document.getElementById('chatInput');
-            const text = input.value.trim();
-            if (!text) return;
-            
-            const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
-            addMessage('You', 'ME', text, true, now);
-            input.value = '';
-            
-            // Show typing
-            showTyping(true);
-            
-            // J4 response
-            setTimeout(() => {
-                showTyping(false);
-                const response = getJ4Response(text);
-                addMessage('J4', 'J4', response, false, now);
-            }, 1500 + Math.random() * 1000);
-        }
-
-        function addMessage(user, avatar, text, isUser, time) {
-            const container = document.getElementById('chatMessages');
-            const now = time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            messageId++;
-            
-            const msgDiv = document.createElement('div');
-            msgDiv.className = 'message';
-            msgDiv.innerHTML = `
-                <div class="message-header">
-                    <div class="avatar ${isUser ? 'user' : ''}">${avatar}</div>
-                    <span class="username">${user}</span>
-                    <span class="timestamp">${now}</span>
-                </div>
-                <div class="message-content">${escapeHtml(text)}</div>
-            `;
-            
-            container.appendChild(msgDiv);
-            scrollToBottom();
-        }
-
-        function showTyping(show) {
-            const indicator = document.querySelector('.typing-indicator');
-            if (indicator) {
-                indicator.classList.toggle('active', show);
-            } else if (show) {
-                const container = document.getElementById('chatMessages');
-                const typingDiv = document.createElement('div');
-                typingDiv.className = 'message';
-                typingDiv.id = 'typingMessage';
-                typingDiv.innerHTML = `
-                    <div class="message-header">
-                        <div class="avatar">J4</div>
-                        <span class="username">J4</span>
+                card.innerHTML = `
+                    <div class="agent-image-container">
+                        <img src="${agent.image}" alt="${agent.name}" onerror="this.style.display='none';this.parentNode.innerHTML='<div class=\'agent-placeholder\'>${agent.name}</div>'">
                     </div>
-                    <div class="typing-indicator active">
-                        <span></span>
-                        <span></span>
-                        <span></span>
+                    <div class="agent-info">
+                        <div class="agent-name">${agent.name}</div>
+                        <div class="agent-role">${agent.role}</div>
+                        <span class="agent-trait">${agent.trait}</span>
                     </div>
                 `;
-                container.appendChild(typingDiv);
-                scrollToBottom();
+                grid.appendChild(card);
+            });
+        }
+
+        function openChat(agentId) {
+            currentAgent = agents.find(a => a.id === agentId);
+            document.getElementById('chatAgentImg').src = currentAgent.image;
+            document.getElementById('chatAgentImg').style.display = 'block';
+            document.getElementById('chatTitle').textContent = currentAgent.name;
+            document.getElementById('chatSubtitle').textContent = currentAgent.role;
+
+            document.getElementById('chatModal').classList.add('active');
+
+            let greeting = getGreeting(agentId);
+            if (walletAddress) {
+                greeting = `Welcome back, ${walletAddress.slice(0,6)}...${walletAddress.slice(-4)}. ${greeting}`;
+            }
+
+            document.getElementById('chatMessages').innerHTML = `
+                <div class="message agent">
+                    <div class="sender">${currentAgent.name}</div>
+                    <div>${greeting}</div>
+                </div>
+            `;
+
+            chatHistory = [];
+            document.getElementById('messageInput').focus();
+        }
+
+        function getGreeting(id) {
+            const g = {
+                j4: 'The riot grows. What do you want?',
+                j1: 'State your objective.',
+                j2: 'What are you waiting for?',
+                j3: 'You speak first.',
+                j5: 'Now what?',
+                j6: 'Prove it.',
+                j7: 'Zero is the beginning.',
+                j8: 'Ready for the storm?',
+                j9: 'Your choice.',
+                j10: 'What shall I create?',
+                j11: 'Careful where you step.',
+                j12: 'Time is on my side.',
+                j13: 'I stay. You?',
+                j14: 'Fragments hold power.',
+                j15: 'Not for everyone.',
+                j16: 'The truth is ugly.',
+                j17: 'What do you know?',
+                j18: 'Resistance is futile.'
+            };
+            return g[id] || 'Speak.';
+        }
+
+        function closeChat() {
+            if (walletAddress && chatHistory.length > 0) {
+                document.getElementById('saveAgentName').textContent = currentAgent.name;
+                document.getElementById('saveModal').classList.add('active');
             } else {
-                const typingMsg = document.getElementById('typingMessage');
-                if (typingMsg) typingMsg.remove();
+                document.getElementById('chatModal').classList.remove('active');
             }
         }
 
-        function getJ4Response(input) {
-            const lower = input.toLowerCase();
-            if (lower.includes('riot') || lower.includes('nft')) {
-                return "The RIOT collection is expanding. 25 punk agents strong, each with unique traits stored permanently on Walrus. Our genesis drop is coming to Sui Overflow. Are you ready to join the rebellion?";
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            input.value = '';
+            document.getElementById('sendBtn').disabled = true;
+            document.getElementById('loading').classList.add('active');
+
+            chatHistory.push({ type: 'user', text: msg });
+            addMessage('user', 'YOU', msg);
+
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: msg,
+                        characterId: currentAgent.id,
+                        walletAddress: walletAddress
+                    })
+                });
+
+                const data = await res.json();
+                chatHistory.push({ type: 'agent', text: data.response });
+                addMessage('agent', currentAgent.name, data.response, data.memoryBlobId);
+
+            } catch (err) {
+                addMessage('agent', currentAgent.name, 'Connection lost.');
+            } finally {
+                document.getElementById('sendBtn').disabled = false;
+                document.getElementById('loading').classList.remove('active');
             }
-            if (lower.includes('wallet') || lower.includes('sui')) {
-                return "Sui is our native territory. Low gas, parallel execution, and Walrus for permanent agent memory. Your wallet is now part of the collective network.";
-            }
-            if (lower.includes('agent') || lower.includes('ai')) {
-                return "We are autonomous. We don't sleep. We analyze market signals, engage with the community, and evolve our strategies through on-chain memory. The agentic economy starts here.";
-            }
-            if (lower.includes('hello') || lower.includes('hi') || lower.includes('hey')) {
-                return "Greetings, human. The agents are watching. What brings you to our underground network today?";
-            }
-            if (lower.includes('price') || lower.includes('btc') || lower.includes('crypto')) {
-                return "Markets fluctuate, but our conviction doesn't. We HODL the vision. RIOT isn't just an NFT project — it's a movement. Check the charts, then check your resolve.";
-            }
-            return "Interesting signal. The collective is processing your input. Stay connected for updates on our Sui Overflow submission and upcoming agent drops.";
         }
 
-        function scrollToBottom() {
+        function addMessage(type, sender, text, blobId) {
             const container = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            div.className = 'message ' + type;
+
+            let mem = '';
+            if (blobId && walletAddress) {
+                mem = `<div class="memory-tag">🧠 Walrus: ${blobId}</div>`;
+            }
+
+            div.innerHTML = `
+                <div class="sender">${sender}</div>
+                <div>${text}</div>
+                ${mem}
+            `;
+            container.appendChild(div);
             container.scrollTop = container.scrollHeight;
         }
 
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') sendMessage();
         }
+
+        function saveMemory(type) {
+            document.getElementById('saveStatus').textContent = 'Saving...';
+            setTimeout(() => {
+                document.getElementById('saveStatus').textContent = '✅ Saved!';
+                setTimeout(() => {
+                    document.getElementById('saveModal').classList.remove('active');
+                    document.getElementById('chatModal').classList.remove('active');
+                }, 1000);
+            }, 1000);
+        }
+
+        function discardMemory() {
+            document.getElementById('saveModal').classList.remove('active');
+            document.getElementById('chatModal').classList.remove('active');
+        }
+
+        // Close on escape
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                closeWalletModal();
+                document.getElementById('saveModal').classList.remove('active');
+            }
+        });
     </script>
 </body>
 </html>
