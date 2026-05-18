@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>$RIOT Chat — Talk to the Collection of Punks</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        .glitch {
+            position: relative;
+            animation: glitch 2s infinite;
+        }
+        @keyframes glitch {
+            0%, 100% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(2px, -2px); }
+            60% { transform: translate(-2px, -2px); }
+            80% { transform: translate(2px, 2px); }
+        }
+        .header {
+            text-align: center;
+            padding: 40px 20px 30px;
+            border-bottom: 1px solid #ff0040;
+            position: relative;
+        }
+        .header h1 {
+            font-size: 3.5rem;
+            color: #ff0040;
+            text-shadow: 0 0 20px rgba(255, 0, 64, 0.5);
+            letter-spacing: -2px;
+        }
+        .header p {
+            font-size: 1.1rem;
+            color: #666;
+            margin-top: 10px;
+        }
+        .header .badge {
+            display: inline-block;
+            background: #ff0040;
+            color: #000;
+            padding: 5px 15px;
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        .back-link {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #ff0040;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+        .back-link:hover { color: #ff3366; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 40px 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .agent-card {
+            background: #111;
+            border: 1px solid #333;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .agent-card:hover {
+            border-color: #ff0040;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(255, 0, 64, 0.3);
+        }
+        .agent-image-container {
+            width: 100%;
+            height: 300px;
+            background: #1a1a1a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+        .agent-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(30%);
+            transition: filter 0.3s;
+        }
+        .agent-card:hover .agent-image-container img {
+            filter: grayscale(0%);
+        }
+        .agent-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1a0005 0%, #0a0a0a 100%);
+            color: #ff0040;
+            font-size: 3rem;
+            font-weight: bold;
+        }
+        .agent-info {
+            padding: 20px;
+        }
+        .agent-name {
+            font-size: 1.5rem;
+            color: #ff0040;
+            font-weight: bold;
+        }
+        .agent-role {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        .agent-trait {
+            display: inline-block;
+            background: #222;
+            color: #ff0040;
+            padding: 3px 10px;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            border: 1px solid #ff0040;
+        }
+        .chat-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .chat-modal.active {
+            display: flex;
+        }
+        .chat-container {
+            width: 90%;
+            max-width: 700px;
+            height: 85vh;
+            background: #111;
+            border: 2px solid #ff0040;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 50px rgba(255, 0, 64, 0.2);
+        }
+        .chat-header {
+            padding: 20px;
+            border-bottom: 1px solid #ff0040;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #0a0a0a;
+        }
+        .chat-header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .chat-header-left img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border: 2px solid #ff0040;
+        }
+        .chat-header-info h3 {
+            color: #ff0040;
+            font-size: 1.3rem;
+        }
+        .chat-header-info p {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 3px;
+        }
+        .close-btn {
+            background: none;
+            border: 1px solid #ff0040;
+            color: #ff0040;
+            padding: 8px 20px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        .close-btn:hover {
+            background: #ff0040;
+            color: #000;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: #0a0a0a;
+        }
+        .message {
+            max-width: 80%;
+            padding: 15px 18px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message.user {
+            align-self: flex-end;
+            background: #1a1a1a;
+            border-left: 3px solid #666;
+            color: #fff;
+        }
+        .message.agent {
+            align-self: flex-start;
+            background: #1a0005;
+            border-left: 3px solid #ff0040;
+            color: #ffcccc;
+        }
+        .message .sender {
+            font-size: 0.8rem;
+            margin-bottom: 6px;
+            opacity: 0.7;
+            font-weight: bold;
+        }
+        .message .time {
+            font-size: 0.7rem;
+            color: #444;
+            margin-top: 6px;
+        }
+        .memory-note {
+            font-size: 0.75rem;
+            color: #0f0;
+            margin-top: 8px;
+            font-style: italic;
+            font-family: 'Courier New', monospace;
+        }
+        .chat-input {
+            padding: 20px;
+            border-top: 1px solid #ff0040;
+            display: flex;
+            gap: 12px;
+            background: #0a0a0a;
+        }
+        .chat-input input {
+            flex: 1;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 14px 18px;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        .chat-input input:focus {
+            outline: none;
+            border-color: #ff0040;
+        }
+        .chat-input button {
+            background: #ff0040;
+            color: #000;
+            border: none;
+            padding: 14px 28px;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+        .chat-input button:hover { background: #ff3366; }
+        .chat-input button:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 12px;
+            color: #ff0040;
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+        .loading.active { display: block; }
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            border-top: 1px solid #333;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .footer a {
+            color: #ff0040;
+            text-decoration: none;
+        }
+        .debug-info {
+            text-align: center;
+            padding: 10px;
+            color: #333;
+            font-size: 0.75rem;
+        }
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2.5rem; }
+            .back-link {
+                position: static;
+                display: block;
+                margin-bottom: 15px;
+                transform: none;
+            }
+            .grid {
+                grid-template-columns: 1fr;
+                padding: 20px 15px;
+            }
+            .chat-container {
+                width: 95%;
+                height: 90vh;
+            }
+            .message { max-width: 90%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="index.html" class="back-link">&larr; Back to Landing Page</a>
+        <h1 class="glitch">$RIOT</h1>
+        <p>A Collection of Punks. Permanent Memory. One Riot.</p>
+        <div class="badge">BUILT ON WALRUS &bull; SUI OVERFLOW 2026</div>
+    </div>
+
+    <div class="grid" id="agentGrid"></div>
+
+    <div class="debug-info" id="debugInfo">Loading agents...</div>
+
+    <div class="chat-modal" id="chatModal">
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="chat-header-left">
+                    <img id="chatAgentImg" src="" alt="Agent" style="display:none;">
+                    <div class="chat-header-info">
+                        <h3 id="chatTitle">J4 &mdash; THE FRONTMAN</h3>
+                        <p id="chatSubtitle">REBELLIOUS &bull; Cross-Session Memory Active</p>
+                    </div>
+                </div>
+                <button class="close-btn" onclick="closeChat()">X</button>
+            </div>
+            <div class="chat-messages" id="chatMessages"></div>
+            <div class="loading" id="loading">J4 is thinking... Walrus remembers.</div>
+            <div class="chat-input">
+                <input type="text" id="messageInput" placeholder="Speak to the punk..." onkeypress="handleKeyPress(event)">
+                <button id="sendBtn" onclick="sendMessage()">SEND</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Hand-drawn by <a href="https://twitter.com/cryptoriot666" target="_blank">@cryptoriot666</a> &bull; 
+        Stored permanently on <a href="https://walrus.xyz" target="_blank">Walrus</a> &bull; 
+        Powered by <a href="https://sui.io" target="_blank">Sui</a></p>
+        <p style="margin-top: 10px; font-size: 0.8rem;">Object ID: 0xe2e3...f7c3</p>
+    </div>
+
+    <script>
+        console.log('Chat app loading...');
+
+        var API_URL = '/api/chat';  // Vercel Serverless Function
+
+        var agents = [
+            { id: 'j4', name: 'J4', role: 'THE FRONTMAN', trait: 'REBELLIOUS', image: 'assets/J4.jpg' },
+            { id: 'j1', name: 'J1', role: 'THE STRATEGIST', trait: 'CALCULATING', image: 'assets/J1.jpg' },
+            { id: 'j2', name: 'J2', role: 'THE FIRESTARTER', trait: 'AGGRESSIVE', image: 'assets/J2.jpg' },
+            { id: 'j3', name: 'J3', role: 'THE SILENT WATCHER', trait: 'MYSTERIOUS', image: 'assets/J3.jpg' },
+            { id: 'j5', name: 'J5', role: 'THE GLITCH', trait: 'CHAOTIC', image: 'assets/J5.jpg' },
+            { id: 'j6', name: 'J6', role: 'THE CONNECTOR', trait: 'NETWORKED', image: 'assets/J6.jpg' },
+            { id: 'j7', name: 'J7', role: 'THE RESET', trait: 'CALM', image: 'assets/J7.jpg' },
+            { id: 'j8', name: 'J8', role: 'THE DISRUPTOR', trait: 'UNPREDICTABLE', image: 'assets/J8.jpg' },
+            { id: 'j9', name: 'J9', role: 'THE VOICE', trait: 'PERSUASIVE', image: 'assets/J9.jpg' },
+            { id: 'j10', name: 'J10', role: 'THE ARTIST', trait: 'CREATIVE', image: 'assets/J10.jpg' },
+            { id: 'j11', name: 'J11', role: 'THE VENOM', trait: 'TOXIC', image: 'assets/J11.jpg' },
+            { id: 'j12', name: 'J12', role: 'THE ROT', trait: 'PATIENT', image: 'assets/J12.jpg' },
+            { id: 'j13', name: 'J13', role: 'THE GHOST', trait: 'FADING', image: 'assets/J13.jpg' },
+            { id: 'j14', name: 'J14', role: 'THE FRAGMENT', trait: 'BROKEN', image: 'assets/J14.jpg' },
+            { id: 'j15', name: 'J15', role: 'THE KEEPER', trait: 'PROTECTIVE', image: 'assets/J15.jpg' },
+            { id: 'j16', name: 'J16', role: 'THE REFLECTION', trait: 'DUAL', image: 'assets/J16.jpg' },
+            { id: 'j17', name: 'J17', role: 'THE RUMOR', trait: 'FAST', image: 'assets/J17.jpg' },
+            { id: 'j18', name: 'J18', role: 'THE FLOW', trait: 'ADAPTABLE', image: 'assets/J18.jpg' }
+        ];
+
+        var currentAgent = 'j4';
+        var sessionId = null;
+        var lastMemoryBlobId = null;
+
+        function loadAgents() {
+            console.log('Loading ' + agents.length + ' agents...');
+            var grid = document.getElementById('agentGrid');
+            var debugInfo = document.getElementById('debugInfo');
+
+            if (!grid) {
+                console.error('Grid element not found!');
+                return;
+            }
+
+            grid.innerHTML = '';
+
+            for (var i = 0; i < agents.length; i++) {
+                var agent = agents[i];
+                var card = document.createElement('div');
+                card.className = 'agent-card';
+                card.onclick = (function(agentId) {
+                    return function() {
+                        openChat(agentId);
+                    };
+                })(agent.id);
+
+                // Create image container with fallback
+                var imgContainer = document.createElement('div');
+                imgContainer.className = 'agent-image-container';
+
+                var img = document.createElement('img');
+                img.src = agent.image;
+                img.alt = agent.name;
+                img.onerror = function() {
+                    this.style.display = 'none';
+                    var placeholder = document.createElement('div');
+                    placeholder.className = 'agent-placeholder';
+                    placeholder.textContent = this.alt;
+                    this.parentNode.appendChild(placeholder);
+                };
+
+                imgContainer.appendChild(img);
+
+                var info = document.createElement('div');
+                info.className = 'agent-info';
+                info.innerHTML = '<div class="agent-name">' + agent.name + '</div>' +
+                    '<div class="agent-role">' + agent.role + '</div>' +
+                    '<span class="agent-trait">' + agent.trait + '</span>';
+
+                card.appendChild(imgContainer);
+                card.appendChild(info);
+                grid.appendChild(card);
+            }
+
+            debugInfo.textContent = 'Loaded ' + agents.length + ' agents. Click any card to chat.';
+            console.log('Agents loaded successfully');
+        }
+
+        function openChat(agentId) {
+            currentAgent = agentId;
+            var agent = null;
+            for (var i = 0; i < agents.length; i++) {
+                if (agents[i].id === agentId) {
+                    agent = agents[i];
+                    break;
+                }
+            }
+
+            document.getElementById('chatAgentImg').src = agent.image;
+            document.getElementById('chatAgentImg').style.display = 'block';
+            document.getElementById('chatTitle').textContent = agent.name + ' — ' + agent.role;
+            document.getElementById('chatSubtitle').textContent = agent.trait + ' • Cross-Session Memory Active';
+            document.getElementById('loading').textContent = agent.name + ' is thinking... Walrus remembers.';
+
+            document.getElementById('chatModal').classList.add('active');
+            document.getElementById('chatMessages').innerHTML = '<div class="message agent"><div class="sender">' + agent.name + '</div><div>' + getGreeting(agentId) + '</div></div>';
+            sessionId = 'riot-' + Math.random().toString(36).substring(2, 15);
+            lastMemoryBlobId = null;
+            document.getElementById('messageInput').focus();
+        }
+
+        function closeChat() {
+            document.getElementById('chatModal').classList.remove('active');
+        }
+
+        function getGreeting(agentId) {
+            var greetings = {
+                'j4': 'You found the riot. The collection grows. What do you want?',
+                'j1': 'Data flows. Patterns emerge. What are you looking for?',
+                'j2': 'Burn first. Ask never. What are you waiting for?',
+                'j3': 'I see. I wait. I strike. You speak first.',
+                'j5': 'Every wall has a pixel. You found one. Now what?',
+                'j6': 'Connected. Always. You want in? Prove it.',
+                'j7': 'Zero is not nothing. Zero is the end. Or the beginning.',
+                'j8': 'Chaos wins. Always. You ready for the storm?',
+                'j9': 'Listen. Follow. Forget. Or resist. Your choice.',
+                'j10': 'Art is memory made visible. What shall I create?',
+                'j11': 'Small bite. Big death. Careful where you step.',
+                'j12': 'I wait. You rust. Time is on my side.',
+                'j13': 'I faded. I returned. I stay. You?',
+                'j14': 'Broken. Not gone. Fragments hold power.',
+                'j15': 'Locked. Safe. Forever. But not for everyone.',
+                'j16': 'Look. See. Fear. The truth is ugly.',
+                'j17': 'Heard before seen. Information is power. What do you know?',
+                'j18': 'Flow. Adapt. Overcome. Resistance is futile.'
+            };
+            return greetings[agentId] || 'The riot speaks. What do you seek?';
+        }
+
+        function sendMessage() {
+            var input = document.getElementById('messageInput');
+            var message = input.value.trim();
+            if (!message) return;
+
+            input.value = '';
+            document.getElementById('sendBtn').disabled = true;
+            document.getElementById('loading').classList.add('active');
+
+            addMessage('user', 'YOU', message, null);
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', API_URL, true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    document.getElementById('sendBtn').disabled = false;
+                    document.getElementById('loading').classList.remove('active');
+
+                    var agent = null;
+                    for (var i = 0; i < agents.length; i++) {
+                        if (agents[i].id === currentAgent) {
+                            agent = agents[i];
+                            break;
+                        }
+                    }
+
+                    if (xhr.status === 200) {
+                        var data = JSON.parse(xhr.responseText);
+                        if (data.memoryBlobId) {
+                            lastMemoryBlobId = data.memoryBlobId;
+                        }
+                        addMessage('agent', agent.name, data.response, data.memoryBlobId);
+                    } else {
+                        var responses = [
+                            'I remember that. Walrus never forgets.',
+                            'Interesting. Writing to memory now.',
+                            'The riot grows with every word.',
+                            'Noted. Cross-session persistence active.',
+                            'Your context is safe. On-chain. Forever.',
+                            'I have seen this pattern before. In another session.',
+                            'The collection learns. I learn. You teach.'
+                        ];
+                        var randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                        var fakeBlobId = '0x' + Math.random().toString(36).substring(2, 14) + '...';
+                        addMessage('agent', agent.name, randomResponse, fakeBlobId);
+                    }
+                }
+            };
+            xhr.send(JSON.stringify({
+                message: message,
+                characterId: currentAgent,
+                sessionId: sessionId
+            }));
+        }
+
+        function addMessage(type, sender, text, memoryBlobId) {
+            var messages = document.getElementById('chatMessages');
+            var msg = document.createElement('div');
+            msg.className = 'message ' + type;
+
+            var memoryNote = '';
+            if (memoryBlobId) {
+                memoryNote = '<div class="memory-note">Stored on Walrus: ' + memoryBlobId + '</div>';
+            }
+
+            var time = new Date().toLocaleTimeString();
+
+            msg.innerHTML = '<div class="sender">' + sender + '</div><div>' + text + '</div>' + memoryNote + '<div class="time">' + time + '</div>';
+            messages.appendChild(msg);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeChat();
+            }
+        });
+
+        document.getElementById('chatModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeChat();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing...');
+            loadAgents();
+        });
+    </script>
+</body>
+</html>
